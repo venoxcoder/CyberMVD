@@ -14,6 +14,7 @@ import {
   MapPin,
   Microscope,
   Network,
+  Radar,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
@@ -233,6 +234,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ lang, onNavigate }
     { id: 'osint', title: t('p_osint', lang), desc: t('d_osint', lang), icon: Globe },
     { id: 'simulator', title: t('p_simulator', lang), desc: t('d_simulator', lang), icon: Sparkles },
     { id: 'map', title: t('p_map', lang), desc: t('d_map', lang), icon: MapPin },
+    { id: 'prediction', title: t('p_prediction', lang), desc: t('d_prediction', lang), icon: Radar },
     { id: 'tests', title: t('p_tests', lang), desc: t('d_tests', lang), icon: Award },
     { id: 'reports', title: t('p_reports', lang), desc: t('d_reports', lang), icon: FileText },
   ];

@@ -183,10 +183,10 @@ export const AmbientCyberBackground: React.FC = () => {
           const dist = Math.hypot(dx, dy);
           if (dist < maxDist) {
             const energy = Math.max(a.boost, b.boost) * 0.16;
-            const alpha = (1 - dist / maxDist) * (isLight ? 0.22 : 0.34) + energy;
+            const alpha = (1 - dist / maxDist) * (isLight ? 0.2 : 0.34) + energy;
             ctx.strokeStyle = isLight
-              ? `rgba(15, 118, 110, ${Math.min(0.65, alpha).toFixed(3)})`
-              : `rgba(45, 212, 191, ${Math.min(0.75, alpha).toFixed(3)})`;
+              ? `rgba(29, 78, 216, ${Math.min(0.62, alpha).toFixed(3)})`
+              : `rgba(59, 130, 246, ${Math.min(0.75, alpha).toFixed(3)})`;
             ctx.lineWidth = energy > 0.05 ? 1.25 : 0.95;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -208,10 +208,10 @@ export const AmbientCyberBackground: React.FC = () => {
         if (pointer.active) {
           const pDist = Math.hypot(pointer.x - a.x, pointer.y - a.y);
           if (pDist < 170) {
-            const pAlpha = (1 - pDist / 170) * (isLight ? 0.28 : 0.42);
+            const pAlpha = (1 - pDist / 170) * (isLight ? 0.26 : 0.4);
             ctx.strokeStyle = isLight
-              ? `rgba(2, 132, 199, ${pAlpha.toFixed(3)})`
-              : `rgba(56, 189, 248, ${pAlpha.toFixed(3)})`;
+              ? `rgba(180, 83, 9, ${pAlpha.toFixed(3)})`
+              : `rgba(212, 168, 67, ${pAlpha.toFixed(3)})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -233,7 +233,7 @@ export const AmbientCyberBackground: React.FC = () => {
         }
         const px = a.x + (b.x - a.x) * p.progress;
         const py = a.y + (b.y - a.y) * p.progress;
-        ctx.fillStyle = isLight ? 'rgba(2, 132, 199, 0.72)' : 'rgba(56, 189, 248, 0.9)';
+        ctx.fillStyle = isLight ? 'rgba(180, 83, 9, 0.72)' : 'rgba(212, 168, 67, 0.9)';
         ctx.beginPath();
         ctx.arc(px, py, 2.3, 0, Math.PI * 2);
         ctx.fill();
@@ -242,10 +242,10 @@ export const AmbientCyberBackground: React.FC = () => {
       // Draw telemetry nodes
       for (const n of nodes) {
         const pulse = 0.65 + 0.35 * Math.sin(tick * 2 + n.phase);
-        const alpha = Math.min(0.95, (isLight ? 0.34 : 0.56) * pulse + n.boost * 0.4);
+        const alpha = Math.min(0.95, (isLight ? 0.32 : 0.56) * pulse + n.boost * 0.4);
         ctx.fillStyle = isLight
-          ? `rgba(15, 118, 110, ${alpha.toFixed(3)})`
-          : `rgba(45, 212, 191, ${alpha.toFixed(3)})`;
+          ? `rgba(29, 78, 216, ${alpha.toFixed(3)})`
+          : `rgba(96, 165, 250, ${alpha.toFixed(3)})`;
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius + n.boost * 1.1, 0, Math.PI * 2);
         ctx.fill();
@@ -261,8 +261,8 @@ export const AmbientCyberBackground: React.FC = () => {
           continue;
         }
         ctx.strokeStyle = isLight
-          ? `rgba(15, 118, 110, ${r.alpha.toFixed(3)})`
-          : `rgba(45, 212, 191, ${r.alpha.toFixed(3)})`;
+          ? `rgba(29, 78, 216, ${r.alpha.toFixed(3)})`
+          : `rgba(59, 130, 246, ${r.alpha.toFixed(3)})`;
         ctx.lineWidth = 1.6;
         ctx.beginPath();
         ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
@@ -282,8 +282,8 @@ export const AmbientCyberBackground: React.FC = () => {
           continue;
         }
         ctx.fillStyle = isLight
-          ? `rgba(2, 132, 199, ${(sp.life * 0.75).toFixed(3)})`
-          : `rgba(56, 189, 248, ${(sp.life * 0.9).toFixed(3)})`;
+          ? `rgba(180, 83, 9, ${(sp.life * 0.72).toFixed(3)})`
+          : `rgba(212, 168, 67, ${(sp.life * 0.9).toFixed(3)})`;
         ctx.beginPath();
         ctx.arc(sp.x, sp.y, sp.radius * sp.life + 0.5, 0, Math.PI * 2);
         ctx.fill();

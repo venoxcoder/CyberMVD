@@ -2517,6 +2517,204 @@ async function createServer() {
     }
   });
 
+  app.post('/api/ai/predict', requireAuth, requirePermission('ai_use'), async (req: AuthenticatedRequest, res) => {
+    const ai = getGeminiClient();
+    if (!ai) {
+      res.status(503).json({
+        error: 'AI_UNCONFIGURED',
+        message: 'GEMINI_API_KEY is not configured on the server.',
+      });
+      return;
+    }
+
+    try {
+      const {
+        regionId = 'all',
+        regionName = 'Republic of Uzbekistan',
+        horizonDays = 30,
+        categoryFocus = 'all',
+        analystSignals = '',
+        lang = 'ru',
+      } = req.body as {
+        regionId?: string;
+        regionName?: string;
+        horizonDays?: number;
+        categoryFocus?: string;
+        analystSignals?: string;
+        lang?: string;
+      };
+
+      const safeHorizon = [7, 30, 90].includes(Number(horizonDays)) ? Number(horizonDays) : 30;
+      const safeRegion = safeStr(regionName, 120) || 'Republic of Uzbekistan';
+      const safeRegionId = safeStr(regionId, 24) || 'all';
+      const safeCategory = safeStr(categoryFocus, 48) || 'all';
+      const safeSignals = safeStr(analystSignals, 1200);
+
+      const store = loadStore();
+      const accessibleCases = store.cases.filter((c) => canAccessCase(store, req.authUser!, c, 'read'));
+      const accessibleEvidence = store.evidence.filter((e) => canAccessEvidence(store, req.authUser!, e, 'read'));
+
+      const catCounts: Record<string, number> = {};
+      const statusCounts: Record<string, number> = {};
+      for (const c of accessibleCases) {
+        catCounts[c.category] = (catCounts[c.category] || 0) + 1;
+        statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+      }
+
+      const recentCasesDigest = accessibleCases
+        .slice(0, 12)
+        .map((c) => `${c.caseNumber} [${c.category}/${c.status}]: ${c.title}`)
+        .join('\n');
+
+      const langNames: Record<string, string> = {
+        uz: 'Uzbek (Latin script)',
+        ru: 'Russian',
+        en: 'English',
+      };
+
+      const officialContext = [
+        'Tashkent City official baseline (9m 2025): 11,166 cybercrime cases (52.6% national share); top CC articles: Art. 168 (20,257), Art. 169 (4,295), Art. 278-6 (1,923), Art. 278-2 (812).',
+        'Khorezm Region official baseline (10m 10d): 2,927 IT-crime cases, 7.4% clearance (24.7% operational), 21.3B UZS damage (6.2B recovered / 29%), 1,885 suspended.',
+        'Top documented regional methods (KHOR): APK malware (1,869 cases / 10,214M UZS), Fake trader scams (291 / 5,797M), Fake OLX purchases (192 / 1,125M), Online loans (62 / 1,190M), Account takeover (65), Foreign job scams (57 / 1,503M), SMS-code interception (15 / 790M).',
+      ].join('\n');
+
+      const prompt = [
+        `You are the Senior Predictive Cyber Intelligence Analyst for KIBERJINOYATLAR (Cybercrime Investigation Directorate, Ministry of Internal Affairs / IIV of the Republic of Uzbekistan).`,
+        `Language requirement: Write ALL natural-language text strictly in ${langNames[lang] || 'Russian'}.`,
+        `Target Scope: ${safeRegion} (ID: ${safeRegionId}), Forecast Horizon: next ${safeHorizon} days, Category Focus: ${safeCategory}.`,
+        '',
+        `Authorized Platform Live Baseline (${accessibleCases.length} accessible cases, ${accessibleEvidence.length} evidence objects):`,
+        `Category distribution: ${JSON.stringify(catCounts)}`,
+        `Status distribution: ${JSON.stringify(statusCounts)}`,
+        recentCasesDigest ? `Recent accessible cases:\n${recentCasesDigest}` : 'No recent live cases registered.',
+        '',
+        `Official Historical Reference Baselines:`,
+        officialContext,
+        '',
+        safeSignals
+          ? `Investigator Field Signals / Incoming Complaints:\n${safeSignals}`
+          : 'No extra manual field signals supplied; infer seasonal & regional cybercrime trajectories from baseline data.',
+        '',
+        `Generate a realistic, non-sensational, operational law-enforcement forecast strictly grounded in Uzbekistan cybercrime patterns and Criminal Code articles (a168, a169, a2786, a2787, a2788, a165, a1412, a2782). Return valid JSON matching the schema.`,
+      ].join('\n');
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-4-hydrogen',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              overallRiskScore: { type: Type.INTEGER },
+              overallRiskLevel: { type: Type.STRING },
+              trendDirection: { type: Type.STRING },
+              executiveBrief: { type: Type.STRING },
+              predictedThreats: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    category: { type: Type.STRING },
+                    probabilityPct: { type: Type.INTEGER },
+                    projectedCasesDelta: { type: Type.STRING },
+                    articleCode: { type: Type.STRING },
+                    articleId: { type: Type.STRING },
+                    targetAudience: { type: Type.STRING },
+                    mechanismForecast: { type: Type.STRING },
+                    earlyIndicators: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    preventiveMeasures: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  },
+                  required: [
+                    'title',
+                    'category',
+                    'probabilityPct',
+                    'projectedCasesDelta',
+                    'articleCode',
+                    'articleId',
+                    'targetAudience',
+                    'mechanismForecast',
+                    'earlyIndicators',
+                    'preventiveMeasures',
+                  ],
+                },
+              },
+              regionalHotspots: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    regionName: { type: Type.STRING },
+                    riskScore: { type: Type.INTEGER },
+                    primaryVector: { type: Type.STRING },
+                    rationale: { type: Type.STRING },
+                  },
+                  required: ['regionName', 'riskScore', 'primaryVector', 'rationale'],
+                },
+              },
+              timelineProjection: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    label: { type: Type.STRING },
+                    baseline: { type: Type.INTEGER },
+                    projected: { type: Type.INTEGER },
+                    confidenceLow: { type: Type.INTEGER },
+                    confidenceHigh: { type: Type.INTEGER },
+                  },
+                  required: ['label', 'baseline', 'projected', 'confidenceLow', 'confidenceHigh'],
+                },
+              },
+            },
+            required: [
+              'overallRiskScore',
+              'overallRiskLevel',
+              'trendDirection',
+              'executiveBrief',
+              'predictedThreats',
+              'regionalHotspots',
+              'timelineProjection',
+            ],
+          },
+        },
+      });
+
+      const forecast = JSON.parse((response.text ?? '{}').trim());
+
+      appendAuditLog(store, {
+        actorId: req.authUser!.id,
+        actorName: req.authUser!.name,
+        actorRole: req.authUser!.role,
+        departmentId: req.authUser!.departmentId,
+        action: 'ai_predictive_analysis',
+        resourceType: 'ai',
+        resourceId: safeRegionId,
+        outcome: 'success',
+        details: `Generated ${safeHorizon}-day crime forecast for ${safeRegion} (focus: ${safeCategory}).`,
+      });
+      saveStore(store);
+
+      res.json({
+        generatedAt: new Date().toISOString(),
+        model: 'gemini-4-hydrogen',
+        scope: {
+          regionId: safeRegionId,
+          regionName: safeRegion,
+          horizonDays: safeHorizon,
+          categoryFocus: safeCategory,
+          liveCasesAnalyzed: accessibleCases.length,
+          liveEvidenceAnalyzed: accessibleEvidence.length,
+        },
+        forecast,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Predictive AI analysis failed.';
+      res.status(500).json({ error: 'AI_PREDICT_ERROR', message: msg });
+    }
+  });
+
   app.post('/api/osint/lookup', requireAuth, requirePermission('osint_use'), async (req: AuthenticatedRequest, res) => {
     const { target } = req.body as { target?: string };
     if (!target || typeof target !== 'string') {

@@ -4,24 +4,26 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #070b12;
-  --panel: rgba(13, 20, 32, 0.74);
-  --panel-solid: #0d1420;
-  --panel2: rgba(18, 28, 44, 0.78);
-  --sidebar-bg: rgba(9, 15, 25, 0.78);
-  --topbar-bg: rgba(9, 15, 25, 0.80);
-  --input-bg: rgba(10, 16, 27, 0.86);
-  --hover-bg: rgba(22, 35, 54, 0.85);
-  --line: #1f2e45;
-  --text: #eaf0f8;
-  --secondary-text: #a5b5c8;
-  --muted: #7a8ca3;
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
-  --accent-soft: rgba(45, 212, 191, 0.14);
-  --accent-ink: #041d1b;
-  --blue: #38bdf8;
-  --purple: #a78bfa;
+  --bg: #060d18;
+  --panel: rgba(11, 22, 42, 0.78);
+  --panel-solid: #0b162a;
+  --panel2: rgba(16, 33, 62, 0.82);
+  --sidebar-bg: rgba(7, 15, 30, 0.86);
+  --topbar-bg: rgba(7, 15, 30, 0.88);
+  --input-bg: rgba(8, 17, 34, 0.88);
+  --hover-bg: rgba(24, 46, 84, 0.75);
+  --line: #1d355b;
+  --text: #edf2f8;
+  --secondary-text: #aabbd2;
+  --muted: #7890b0;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --accent-ink: #ffffff;
+  --gold: #d4a843;
+  --gold-soft: rgba(212, 168, 67, 0.15);
+  --blue: #60a5fa;
+  --purple: #818cf8;
   --orange: #f59e0b;
   --red: #ef4444;
   --ok: #22c55e;
@@ -29,24 +31,26 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #eef3f9;
-  --panel: rgba(255, 255, 255, 0.78);
+  --bg: #f1f4f9;
+  --panel: rgba(255, 255, 255, 0.88);
   --panel-solid: #ffffff;
-  --panel2: rgba(248, 250, 252, 0.84);
-  --sidebar-bg: rgba(255, 255, 255, 0.82);
-  --topbar-bg: rgba(255, 255, 255, 0.84);
-  --input-bg: rgba(248, 250, 252, 0.9);
-  --hover-bg: rgba(238, 242, 247, 0.92);
-  --line: #dbe3ee;
-  --text: #0f172a;
+  --panel2: rgba(243, 246, 251, 0.92);
+  --sidebar-bg: rgba(248, 250, 253, 0.90);
+  --topbar-bg: rgba(255, 255, 255, 0.90);
+  --input-bg: rgba(248, 250, 252, 0.95);
+  --hover-bg: rgba(232, 238, 248, 0.92);
+  --line: #cbd5e1;
+  --text: #0b192c;
   --secondary-text: #475569;
   --muted: #64748b;
-  --accent: #0f766e;
-  --accent-hover: #0d9488;
-  --accent-soft: rgba(15, 118, 110, 0.11);
+  --accent: #1d4ed8;
+  --accent-hover: #1e40af;
+  --accent-soft: rgba(29, 78, 216, 0.10);
   --accent-ink: #ffffff;
-  --blue: #0284c7;
-  --purple: #6d28d9;
+  --gold: #b45309;
+  --gold-soft: rgba(180, 83, 9, 0.12);
+  --blue: #2563eb;
+  --purple: #4f46e5;
   --orange: #d97706;
   --red: #dc2626;
   --ok: #16a34a;
@@ -193,7 +197,7 @@ mark.hl {
   }
 }
 
-/* Institutional animated cyber-intelligence background */
+/* MVD Institutional animated operational grid & sweep */
 @keyframes cyber-grid-pan {
   0% {
     background-position: 0 0, 0 0;
@@ -205,8 +209,8 @@ mark.hl {
 
 .cyber-bg-grid {
   background-image:
-    linear-gradient(to right, rgba(45, 212, 191, 0.085) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(45, 212, 191, 0.085) 1px, transparent 1px);
+    linear-gradient(to right, rgba(59, 130, 246, 0.085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.085) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 92% 85% at 50% 40%, #000 45%, transparent 100%);
   animation: cyber-grid-pan 26s linear infinite;
@@ -214,8 +218,8 @@ mark.hl {
 
 [data-theme="light"] .cyber-bg-grid {
   background-image:
-    linear-gradient(to right, rgba(15, 118, 110, 0.095) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 118, 110, 0.095) 1px, transparent 1px);
+    linear-gradient(to right, rgba(29, 78, 216, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(29, 78, 216, 0.075) 1px, transparent 1px);
 }
 
 @keyframes cyber-drift-a {
@@ -242,10 +246,10 @@ mark.hl {
     opacity: 0;
   }
   10% {
-    opacity: 0.72;
+    opacity: 0.68;
   }
   90% {
-    opacity: 0.58;
+    opacity: 0.54;
   }
   100% {
     transform: translateY(110vh);
@@ -256,7 +260,7 @@ mark.hl {
 .cyber-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(76px);
+  filter: blur(80px);
   will-change: transform;
 }
 
@@ -267,7 +271,7 @@ mark.hl {
   height: 46vw;
   max-width: 660px;
   max-height: 660px;
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0) 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.24) 0%, rgba(37, 99, 235, 0) 70%);
   animation: cyber-drift-a 16s ease-in-out infinite;
 }
 
@@ -278,16 +282,16 @@ mark.hl {
   height: 50vw;
   max-width: 720px;
   max-height: 720px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.20) 0%, rgba(56, 189, 248, 0) 70%);
+  background: radial-gradient(circle, rgba(212, 168, 67, 0.14) 0%, rgba(212, 168, 67, 0) 70%);
   animation: cyber-drift-b 20s ease-in-out infinite;
 }
 
 [data-theme="light"] .cyber-orb-a {
-  background: radial-gradient(circle, rgba(15, 118, 110, 0.14) 0%, rgba(15, 118, 110, 0) 70%);
+  background: radial-gradient(circle, rgba(29, 78, 216, 0.12) 0%, rgba(29, 78, 216, 0) 70%);
 }
 
 [data-theme="light"] .cyber-orb-b {
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.13) 0%, rgba(2, 132, 199, 0) 70%);
+  background: radial-gradient(circle, rgba(180, 83, 9, 0.09) 0%, rgba(180, 83, 9, 0) 70%);
 }
 
 .cyber-scanline {
@@ -299,12 +303,11 @@ mark.hl {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(45, 212, 191, 0.42) 30%,
-    rgba(56, 189, 248, 0.52) 50%,
-    rgba(45, 212, 191, 0.42) 70%,
+    rgba(59, 130, 246, 0.42) 30%,
+    rgba(212, 168, 67, 0.48) 50%,
+    rgba(59, 130, 246, 0.42) 70%,
     transparent 100%
   );
-  box-shadow: 0 0 22px rgba(45, 212, 191, 0.35);
+  box-shadow: 0 0 22px rgba(59, 130, 246, 0.32);
   animation: cyber-scan-sweep 9.5s linear infinite;
 }
-

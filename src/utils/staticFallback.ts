@@ -1261,5 +1261,9 @@ export function handleStaticApi<T = unknown>(
     }
   }
 
+  if (pathname === '/api/ai/predict') {
+    throw new Error('AI predictive forecasting requires an active backend server with GEMINI_API_KEY configured.');
+  }
+
   return {} as T;
 }

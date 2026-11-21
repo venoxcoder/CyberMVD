@@ -27,19 +27,19 @@ class AppErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-[#070b12] p-6 text-[#eaf0f8]">
-          <div className="w-full max-w-md rounded-xl border border-[#1f2e45] bg-[#0d1420] p-6">
-            <h1 className="text-base font-bold text-[#2dd4bf]">KIBERJINOYATLAR</h1>
-            <p className="mt-2 text-xs text-[#a5b5c8]">
+        <div className="flex min-h-screen items-center justify-center bg-[#060d18] p-6 text-[#edf2f8]">
+          <div className="w-full max-w-md rounded-xl border border-[#1d355b] bg-[#0b162a] p-6">
+            <h1 className="text-base font-bold text-[#3b82f6]">KIBERJINOYATLAR</h1>
+            <p className="mt-2 text-xs text-[#aabbd2]">
               Ошибка инициализации интерфейса / Interface error:
             </p>
-            <pre className="mt-2 overflow-x-auto rounded-lg border border-[#1f2e45] bg-[#070b12] p-3 text-[11px] text-[#ef4444]">
+            <pre className="mt-2 overflow-x-auto rounded-lg border border-[#1d355b] bg-[#060d18] p-3 text-[11px] text-[#ef4444]">
               {this.state.message}
             </pre>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="mt-4 rounded-lg bg-[#2dd4bf] px-4 py-2 text-xs font-bold text-[#041d1b]"
+              className="mt-4 rounded-lg bg-[#3b82f6] px-4 py-2 text-xs font-bold text-white"
             >
               Перезагрузить / Reload
             </button>

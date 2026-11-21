@@ -30,13 +30,13 @@ interface IntelligenceGraphPageProps {
 }
 
 const NODE_COLORS: Record<GraphNodeType, string> = {
-  case: '#2dd4bf',
-  evidence: '#38bdf8',
-  domain: '#a78bfa',
-  ip: '#f59e0b',
-  file: '#60a5fa',
+  case: '#3b82f6',
+  evidence: '#60a5fa',
+  domain: '#818cf8',
+  ip: '#d4a843',
+  file: '#38bdf8',
   event: '#ef4444',
-  organization: '#34d399',
+  organization: '#22c55e',
   participant: '#f472b6',
 };
 
@@ -450,7 +450,7 @@ export const IntelligenceGraphPage: React.FC<IntelligenceGraphPageProps> = ({
         />
       ) : (
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-          <div className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[#070b12] xl:col-span-8">
+          <div className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[#060d18] xl:col-span-8">
             <svg
               ref={svgRef}
               viewBox="0 0 880 500"
@@ -479,9 +479,9 @@ export const IntelligenceGraphPage: React.FC<IntelligenceGraphPageProps> = ({
                     (neighborhood.direct.has(edge.targetId) && neighborhood.indirect.has(edge.sourceId));
                   const stroke =
                     edge.confidence === 'confirmed'
-                      ? '#2dd4bf'
+                      ? '#3b82f6'
                       : edge.confidence === 'indirect'
-                        ? '#f59e0b'
+                        ? '#d4a843'
                         : '#94a3b8';
                   return (
                     <g key={edge.id} opacity={isHighlighted ? 0.92 : 0.16}>
@@ -513,7 +513,7 @@ export const IntelligenceGraphPage: React.FC<IntelligenceGraphPageProps> = ({
                   const isDirect = neighborhood.direct.has(node.id);
                   const isIndirect = neighborhood.indirect.has(node.id);
                   const dimmed = selectedNodeId && !isSel && !isDirect && !isIndirect;
-                  const color = NODE_COLORS[node.type] || '#2dd4bf';
+                  const color = NODE_COLORS[node.type] || '#3b82f6';
                   const locLabel = localizeRecordText(node.label, lang);
                   return (
                     <g
@@ -529,7 +529,7 @@ export const IntelligenceGraphPage: React.FC<IntelligenceGraphPageProps> = ({
                     >
                       <circle
                         r={isSel ? 23 : isDirect ? 20 : 17}
-                        fill="#0d1420"
+                        fill="#0b162a"
                         stroke={color}
                         strokeWidth={isSel ? 3 : isDirect ? 2.2 : 1.5}
                       />

@@ -26,6 +26,7 @@ import { InteractiveMapPage } from './components/InteractiveMapPage';
 import { KnowledgeBasePage } from './components/KnowledgeBasePage';
 import { LayoutShell } from './components/LayoutShell';
 import { OsintLabPage } from './components/OsintLabPage';
+import { PredictiveAnalyticsPage } from './components/PredictiveAnalyticsPage';
 import { ProfileDashboardPage } from './components/ProfileDashboardPage';
 import { ReportGeneratorPage } from './components/ReportGeneratorPage';
 import { TestCenterPage } from './components/TestCenterPage';
@@ -54,6 +55,7 @@ const VALID_PAGES: PageId[] = [
   'forensics',
   'simulator',
   'map',
+  'prediction',
   'tests',
   'profile',
   'reports',
@@ -484,6 +486,17 @@ function WorkspaceApp() {
             canGoBack={canGoBack}
             onBack={handleBack}
             onNavigate={handleNavigate}
+          />
+        );
+      case 'prediction':
+        return (
+          <PredictiveAnalyticsPage
+            lang={lang}
+            initialRegionId={route.id}
+            canGoBack={canGoBack}
+            onBack={handleBack}
+            onNavigate={handleNavigate}
+            onToast={showToast}
           />
         );
       case 'tests':

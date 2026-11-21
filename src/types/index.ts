@@ -22,6 +22,7 @@ export type PageId =
   | 'forensics'
   | 'simulator'
   | 'map'
+  | 'prediction'
   | 'tests'
   | 'profile'
   | 'reports'

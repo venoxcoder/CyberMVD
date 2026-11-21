@@ -24,6 +24,7 @@ import {
   Microscope,
   Network,
   Pin,
+  Radar,
   Scale,
   Search,
   Settings,
@@ -96,6 +97,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'forensics', labelKey: 'p_forensics', icon: Microscope },
       { id: 'simulator', labelKey: 'p_simulator', icon: Sparkles },
       { id: 'map', labelKey: 'p_map', icon: MapPin },
+      { id: 'prediction', labelKey: 'p_prediction', icon: Radar, reqPerm: 'ai_use' },
     ],
   },
   {
