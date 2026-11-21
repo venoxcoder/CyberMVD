@@ -46,6 +46,50 @@ interface FloatingAiWidgetProps {
 const VOICE_OPTIONS: VoicePersona[] = ['Zephyr', 'Kore', 'Puck', 'Charon', 'Fenrir'];
 const STORAGE_KEY = 'kj_floating_ai_msgs';
 
+interface SpeechRecognitionResultAlternativeLike {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultLike {
+  isFinal: boolean;
+  length: number;
+  [index: number]: SpeechRecognitionResultAlternativeLike;
+}
+
+interface SpeechRecognitionEventLike extends Event {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: SpeechRecognitionResultLike;
+  };
+}
+
+interface SpeechRecognitionErrorEventLike extends Event {
+  error?: string;
+}
+
+interface BrowserSpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+function getSpeechRecognitionCtor(): (new () => BrowserSpeechRecognition) | null {
+  if (typeof window === 'undefined') return null;
+  const w = window as unknown as {
+    SpeechRecognition?: new () => BrowserSpeechRecognition;
+    webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+  };
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+}
+
 export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   lang,
   route,
@@ -73,14 +117,19 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   const audioCacheRef = useRef<Map<string, string>>(new Map());
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // Dictation (STT)
+  // Dictation (STT via Browser SpeechRecognition with MediaRecorder fallback)
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [dictationSec, setDictationSec] = useState(0);
+  const [interimTranscript, setInterimTranscript] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const dictationStreamRef = useRef<MediaStream | null>(null);
   const dictationChunksRef = useRef<Blob[]>([]);
   const dictationTimerRef = useRef<number | null>(null);
+  const speechRecRef = useRef<BrowserSpeechRecognition | null>(null);
+  const speechBaseInputRef = useRef<string>('');
+  const speechFinalRef = useRef<string>('');
+  const inputRef = useRef<string>(input);
 
   // Real-time Live Voice Mode (gemini-3.8-live via /ws/ai-live)
   const [voiceModeOpen, setVoiceModeOpen] = useState(false);
@@ -112,6 +161,10 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
 
   useEffect(() => {
     liveMutedRef.current = liveMuted;
@@ -254,9 +307,20 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
     }
   };
 
-  /* ======================== VOICE DICTATION (STT) ======================== */
+  /* ======================== VOICE DICTATION (BROWSER SPEECH RECOGNITION + FALLBACK) ======================== */
 
   const stopDictationCleanup = () => {
+    if (speechRecRef.current) {
+      try {
+        speechRecRef.current.onresult = null;
+        speechRecRef.current.onerror = null;
+        speechRecRef.current.onend = null;
+        speechRecRef.current.stop();
+      } catch {
+        // ignore
+      }
+      speechRecRef.current = null;
+    }
     if (dictationTimerRef.current) {
       window.clearInterval(dictationTimerRef.current);
       dictationTimerRef.current = null;
@@ -266,15 +330,12 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
       dictationStreamRef.current = null;
     }
     mediaRecorderRef.current = null;
+    setInterimTranscript('');
+    setIsRecording(false);
+    setDictationSec(0);
   };
 
-  const toggleDictation = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      setIsRecording(false);
-      return;
-    }
-
+  const startMediaRecorderDictation = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       onToast(
         tr(
@@ -310,7 +371,6 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
         const mime = recorder.mimeType || 'audio/webm';
         const blob = new Blob(dictationChunksRef.current, { type: mime });
         stopDictationCleanup();
-        setDictationSec(0);
         if (blob.size < 400) return;
 
         setIsTranscribing(true);
@@ -376,6 +436,106 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
         )
       );
     }
+  };
+
+  const toggleDictation = async () => {
+    if (isRecording) {
+      if (speechRecRef.current) {
+        try {
+          speechRecRef.current.stop();
+        } catch {
+          stopDictationCleanup();
+        }
+      } else if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+      } else {
+        stopDictationCleanup();
+      }
+      return;
+    }
+
+    const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+    if (SpeechRecognitionCtor) {
+      try {
+        stopAudioPlayback();
+        const recognition = new SpeechRecognitionCtor();
+        recognition.lang = lang === 'ru' ? 'ru-RU' : lang === 'en' ? 'en-US' : 'uz-UZ';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        speechBaseInputRef.current = inputRef.current.trim();
+        speechFinalRef.current = '';
+        setInterimTranscript('');
+
+        recognition.onstart = () => {
+          setIsRecording(true);
+          setDictationSec(0);
+          if (dictationTimerRef.current) window.clearInterval(dictationTimerRef.current);
+          dictationTimerRef.current = window.setInterval(() => {
+            setDictationSec((s) => s + 1);
+          }, 1000);
+        };
+
+        recognition.onresult = (event: SpeechRecognitionEventLike) => {
+          let finalChunk = '';
+          let interimChunk = '';
+          for (let i = 0; i < event.results.length; i++) {
+            const result = event.results[i];
+            const transcript = result?.[0]?.transcript || '';
+            if (result?.isFinal) {
+              finalChunk = `${finalChunk} ${transcript}`.trim();
+            } else {
+              interimChunk = `${interimChunk} ${transcript}`.trim();
+            }
+          }
+          speechFinalRef.current = finalChunk;
+          setInterimTranscript(interimChunk);
+          const combined = [speechBaseInputRef.current, finalChunk, interimChunk]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+          setInput(combined);
+        };
+
+        recognition.onerror = (ev: SpeechRecognitionErrorEventLike) => {
+          const code = ev?.error || '';
+          if (code === 'not-allowed' || code === 'service-not-allowed') {
+            stopDictationCleanup();
+            onToast(
+              tr(
+                lang,
+                'Mikrofonga ruxsat berilmadi',
+                'Доступ к микрофону отклонён',
+                'Microphone permission denied'
+              )
+            );
+          } else if (code !== 'aborted' && code !== 'no-speech') {
+            stopDictationCleanup();
+            void startMediaRecorderDictation();
+          }
+        };
+
+        recognition.onend = () => {
+          const finalCombined = [speechBaseInputRef.current, speechFinalRef.current]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+          if (finalCombined) {
+            setInput(finalCombined);
+          }
+          stopDictationCleanup();
+        };
+
+        speechRecRef.current = recognition;
+        recognition.start();
+        return;
+      } catch {
+        stopDictationCleanup();
+      }
+    }
+
+    await startMediaRecorderDictation();
   };
 
   /* ======================== REAL-TIME LIVE VOICE ======================== */
@@ -659,6 +819,9 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   /* ======================== TEXT Q&A CHAT ======================== */
 
   const sendTextMessage = async (overridePrompt?: string) => {
+    if (isRecording) {
+      stopDictationCleanup();
+    }
     const textToSend = (overridePrompt ?? input).trim();
     if (!textToSend || sending) return;
     if (!aiConfigured) {
@@ -782,7 +945,7 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                   <span>KIBER AI</span>
                   <span
                     className={`inline-block h-1.5 w-1.5 rounded-full ${
-                      aiConfigured ? 'bg-[var(--green)]' : 'bg-[var(--orange)]'
+                      aiConfigured ? 'bg-[var(--ok)]' : 'bg-[var(--orange)]'
                     }`}
                   />
                 </div>
@@ -907,7 +1070,7 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                   <Radio
                     className={`h-4 w-4 ${
                       liveStatus === 'active'
-                        ? 'animate-pulse text-[var(--green)]'
+                        ? 'animate-pulse text-[var(--ok)]'
                         : liveStatus === 'connecting'
                           ? 'animate-spin text-[var(--accent)]'
                           : 'text-[var(--red)]'
@@ -984,7 +1147,7 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                   )}
                   {liveOutputDraft && (
                     <div className="text-[var(--text)]">
-                      <span className="font-bold text-[var(--green)]">AI: </span>
+                      <span className="font-bold text-[var(--ok)]">AI: </span>
                       {liveOutputDraft}
                     </div>
                   )}
@@ -1102,26 +1265,47 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                 )}
               </div>
             )}
+            {isRecording && (
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-[var(--red)]/40 bg-[var(--red)]/10 px-2.5 py-1.5 text-[11px]">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[var(--red)]" />
+                  <span className="truncate text-[var(--text)]">
+                    {interimTranscript
+                      ? interimTranscript
+                      : tr(
+                          lang,
+                          'Gapiring, matn avtomatik kiritiladi...',
+                          'Говорите — речь распознаётся в текст...',
+                          'Speak now — transcribing live...'
+                        )}
+                  </span>
+                </div>
+                <span className="shrink-0 font-mono text-[10px] font-bold text-[var(--red)]">
+                  {dictationSec}s
+                </span>
+              </div>
+            )}
             <div className="flex items-end gap-1.5">
               <button
                 type="button"
                 onClick={() => void toggleDictation()}
                 disabled={isTranscribing}
+                aria-pressed={isRecording}
                 title={
                   isRecording
-                    ? tr(lang, 'Yozishni to‘xtatish', 'Остановить диктовку', 'Stop dictation')
-                    : tr(lang, 'Ovozli kiritish', 'Голосовой ввод', 'Voice dictation')
+                    ? tr(lang, 'Yozishni to‘xtatish', 'Остановить распознавание', 'Stop speech recognition')
+                    : tr(lang, 'Mikrofon (nutqni matnga)', 'Микрофон (речь в текст)', 'Microphone (speech-to-text)')
                 }
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                   isRecording
-                    ? 'border-[var(--red)] bg-[var(--red)]/15 text-[var(--red)]'
+                    ? 'animate-pulse border-[var(--red)] bg-[var(--red)]/15 text-[var(--red)]'
                     : 'border-[var(--line)] bg-[var(--panel)] text-[var(--secondary-text)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
                 }`}
               >
                 {isTranscribing ? (
                   <Loader2 className="h-4 w-4 animate-spin text-[var(--accent)]" />
                 ) : isRecording ? (
-                  <span className="font-mono text-[10px] font-bold">{dictationSec}s</span>
+                  <MicOff className="h-4 w-4" />
                 ) : (
                   <Mic className="h-4 w-4" />
                 )}
@@ -1182,9 +1366,9 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
           <span
             className={`absolute -top-1 -right-1 h-2 w-2 rounded-full ${
               liveActive
-                ? 'animate-ping bg-[var(--green)]'
+                ? 'animate-ping bg-[var(--ok)]'
                 : aiConfigured
-                  ? 'bg-[var(--green)]'
+                  ? 'bg-[var(--ok)]'
                   : 'bg-[var(--orange)]'
             }`}
           />

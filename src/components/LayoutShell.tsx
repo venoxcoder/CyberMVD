@@ -37,6 +37,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import type { Lang, PageId, RouteState, ThemeMode } from '../types';
 import { deptLabel, localizeRecordText, t, tr } from '../utils/i18n';
+import { AmbientCyberBackground } from './AmbientCyberBackground';
 
 interface LayoutShellProps {
   lang: Lang;
@@ -386,9 +387,11 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
   const pageLabel = route.page === 'art' ? t('p_catalog', lang) : t(`p_${route.page}`, lang);
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="relative flex min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <AmbientCyberBackground />
+
       {/* Desktop Sidebar */}
-      <aside className="noprint hidden lg:flex lg:w-[264px] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--sidebar-bg)] lg:sticky lg:top-0 lg:h-screen">
+      <aside className="noprint relative z-10 hidden lg:flex lg:w-[264px] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--sidebar-bg)]/95 lg:backdrop-blur-md lg:sticky lg:top-0 lg:h-screen">
         {renderSidebarContent()}
       </aside>
 
@@ -411,7 +414,7 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
       )}
 
       {/* Main Content Area */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="noprint sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-[var(--line)] bg-[var(--topbar-bg)] px-4 backdrop-blur-md sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
             <button

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, KeyRound, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import type { Lang, ThemeMode } from '../types';
+import { AmbientCyberBackground } from './AmbientCyberBackground';
 
 interface AuthGateProps {
   lang: Lang;
@@ -140,8 +141,9 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   }
 
   return (
-    <div className="flex min-h-screen flex-col justify-between bg-[var(--bg)] text-[var(--text)]">
-      <div className="flex items-center justify-between border-b border-[var(--line)] bg-[var(--sidebar-bg)] px-6 py-3">
+    <div className="relative flex min-h-screen flex-col justify-between bg-[var(--bg)] text-[var(--text)]">
+      <AmbientCyberBackground />
+      <div className="relative z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--sidebar-bg)]/90 px-6 py-3 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <img
             src="./assets/aistudio/logo_e89a7120.svg"
@@ -180,8 +182,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({
         </div>
       </div>
 
-      <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center px-4 py-10">
-        <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-6 sm:p-7">
+      <main className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center px-4 py-10">
+        <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)]/95 p-6 shadow-2xl backdrop-blur-md sm:p-7">
           {!bootstrapClaimed ? (
             <div className="mb-5 flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--accent-soft)] text-[var(--accent)]">

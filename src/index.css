@@ -143,3 +143,117 @@ mark.hl {
     border-color: #cbd5e1 !important;
   }
 }
+
+/* Institutional animated cyber-intelligence background */
+.cyber-bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(45, 212, 191, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(45, 212, 191, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, #000 35%, transparent 100%);
+}
+
+[data-theme="light"] .cyber-bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(15, 118, 110, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 118, 110, 0.055) 1px, transparent 1px);
+}
+
+@keyframes cyber-drift-a {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.08);
+  }
+}
+
+@keyframes cyber-drift-b {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-7vw, -5vh, 0) scale(1.1);
+  }
+}
+
+@keyframes cyber-scan-sweep {
+  0% {
+    transform: translateY(-12vh);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  88% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateY(112vh);
+    opacity: 0;
+  }
+}
+
+.cyber-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(88px);
+  will-change: transform;
+}
+
+.cyber-orb-a {
+  top: -12%;
+  left: -8%;
+  width: 44vw;
+  height: 44vw;
+  max-width: 620px;
+  max-height: 620px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.14) 0%, rgba(45, 212, 191, 0) 70%);
+  animation: cyber-drift-a 20s ease-in-out infinite;
+}
+
+.cyber-orb-b {
+  right: -10%;
+  bottom: -14%;
+  width: 48vw;
+  height: 48vw;
+  max-width: 680px;
+  max-height: 680px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.13) 0%, rgba(56, 189, 248, 0) 70%);
+  animation: cyber-drift-b 24s ease-in-out infinite;
+}
+
+[data-theme="light"] .cyber-orb-a {
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.09) 0%, rgba(15, 118, 110, 0) 70%);
+}
+
+[data-theme="light"] .cyber-orb-b {
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, rgba(2, 132, 199, 0) 70%);
+}
+
+.cyber-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(45, 212, 191, 0.28) 30%,
+    rgba(56, 189, 248, 0.34) 50%,
+    rgba(45, 212, 191, 0.28) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 18px rgba(45, 212, 191, 0.22);
+  animation: cyber-scan-sweep 11s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cyber-orb-a,
+  .cyber-orb-b,
+  .cyber-scanline {
+    animation: none;
+  }
+}
+
