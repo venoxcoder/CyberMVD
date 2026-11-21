@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   CheckSquare,
   ChevronDown,
@@ -138,24 +139,38 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
             <button
               type="button"
               onClick={() => setViewMode('articles')}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`relative rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
                 viewMode === 'articles'
-                  ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
+                  ? 'text-[var(--accent-ink)]'
                   : 'text-[var(--secondary-text)] hover:text-[var(--text)]'
               }`}
             >
-              {t('viewArticles', lang)}
+              {viewMode === 'articles' && (
+                <motion.span
+                  layoutId="catalog-view-pill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  className="absolute inset-0 rounded-md bg-[var(--accent)]"
+                />
+              )}
+              <span className="relative z-10">{t('viewArticles', lang)}</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('methods')}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`relative rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
                 viewMode === 'methods'
-                  ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
+                  ? 'text-[var(--accent-ink)]'
                   : 'text-[var(--secondary-text)] hover:text-[var(--text)]'
               }`}
             >
-              {t('viewMethods', lang)}
+              {viewMode === 'methods' && (
+                <motion.span
+                  layoutId="catalog-view-pill"
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  className="absolute inset-0 rounded-md bg-[var(--accent)]"
+                />
+              )}
+              <span className="relative z-10">{t('viewMethods', lang)}</span>
             </button>
           </div>
         </div>
@@ -164,6 +179,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
         </div>
       </div>
 
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={viewMode}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        >
       {viewMode === 'articles' ? (
         filteredArticles.length === 0 ? (
           <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-8 text-center text-sm text-[var(--muted)]">
@@ -252,6 +275,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
           ))}
         </div>
       )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

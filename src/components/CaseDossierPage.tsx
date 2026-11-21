@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'motion/react';
 import {
   ArrowLeft,
   Briefcase,
@@ -557,23 +558,32 @@ export const CaseDossierPage: React.FC<CaseDossierPageProps> = ({
             <div className="flex flex-wrap gap-1.5 border-b border-[var(--line)] pb-3">
               {tabs.map((tb) => {
                 const Icon = tb.icon;
+                const isActive = tab === tb.id;
                 return (
                   <button
                     key={tb.id}
                     type="button"
                     onClick={() => setTab(tb.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                      tab === tb.id
-                        ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
+                    className={`relative inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      isActive
+                        ? 'border-transparent text-[var(--accent)]'
                         : 'border-[var(--line)] bg-[var(--panel)] text-[var(--secondary-text)] hover:text-[var(--text)]'
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{tb.label}</span>
+                    {isActive && (
+                      <motion.span
+                        layoutId="case-dossier-tab-pill"
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                        className="absolute inset-0 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)]"
+                      />
+                    )}
+                    <Icon className="relative z-10 h-3.5 w-3.5" />
+                    <span className="relative z-10">{tb.label}</span>
                   </button>
                 );
               })}
             </div>
+            <div key={tab} className="animate-panel-reveal">
 
             {tab === 'overview' && (
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -1266,6 +1276,7 @@ export const CaseDossierPage: React.FC<CaseDossierPageProps> = ({
                 </div>
               </div>
             )}
+            </div>
           </>
         )}
       </div>

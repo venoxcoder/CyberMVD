@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Bot,
   Briefcase,
@@ -929,11 +930,16 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   return (
     <div className="noprint">
       {/* Expanded Floating AI Drawer */}
-      {open && (
-        <section
-          aria-label={tr(lang, 'Tezkor AI yordamchi', 'Быстрый ИИ-ассистент', 'Quick AI Assistant')}
-          className="fixed right-5 bottom-20 z-40 flex w-[395px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--panel)] shadow-2xl"
-        >
+      <AnimatePresence>
+        {open && (
+          <motion.section
+            initial={{ opacity: 0, y: 18, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 14, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            aria-label={tr(lang, 'Tezkor AI yordamchi', 'Быстрый ИИ-ассистент', 'Quick AI Assistant')}
+            className="fixed right-5 bottom-20 z-40 flex w-[395px] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--panel-solid)] shadow-2xl backdrop-blur-xl"
+          >
           {/* Header */}
           <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] bg-[var(--panel2)] px-3.5 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
@@ -1063,8 +1069,15 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
           </div>
 
           {/* Live Voice Mode Strip */}
-          {voiceModeOpen && (
-            <div className="border-b border-[var(--accent)]/30 bg-[var(--accent-soft)]/40 px-3.5 py-2.5 text-xs">
+          <AnimatePresence initial={false}>
+            {voiceModeOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden border-b border-[var(--accent)]/30 bg-[var(--accent-soft)]/40 px-3.5 py-2.5 text-xs"
+              >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Radio
@@ -1153,8 +1166,9 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                   )}
                 </div>
               )}
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Messages Viewport */}
           <div className="h-[290px] space-y-2.5 overflow-y-auto p-3">
@@ -1265,26 +1279,34 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
                 )}
               </div>
             )}
-            {isRecording && (
-              <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-[var(--red)]/40 bg-[var(--red)]/10 px-2.5 py-1.5 text-[11px]">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[var(--red)]" />
-                  <span className="truncate text-[var(--text)]">
-                    {interimTranscript
-                      ? interimTranscript
-                      : tr(
-                          lang,
-                          'Gapiring, matn avtomatik kiritiladi...',
-                          'Говорите — речь распознаётся в текст...',
-                          'Speak now — transcribing live...'
-                        )}
+            <AnimatePresence initial={false}>
+              {isRecording && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-[var(--red)]/40 bg-[var(--red)]/10 px-2.5 py-1.5 text-[11px]"
+                >
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[var(--red)]" />
+                    <span className="truncate text-[var(--text)]">
+                      {interimTranscript
+                        ? interimTranscript
+                        : tr(
+                            lang,
+                            'Gapiring, matn avtomatik kiritiladi...',
+                            'Говорите — речь распознаётся в текст...',
+                            'Speak now — transcribing live...'
+                          )}
+                    </span>
+                  </div>
+                  <span className="shrink-0 font-mono text-[10px] font-bold text-[var(--red)]">
+                    {dictationSec}s
                   </span>
-                </div>
-                <span className="shrink-0 font-mono text-[10px] font-bold text-[var(--red)]">
-                  {dictationSec}s
-                </span>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className="flex items-end gap-1.5">
               <button
                 type="button"
@@ -1341,12 +1363,15 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
               </button>
             </div>
           </div>
-        </section>
-      )}
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Fixed Bottom-Right AI Launcher Icon */}
-      <button
+      <motion.button
         type="button"
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.92 }}
         onClick={() => setOpen((o) => !o)}
         aria-label={tr(lang, 'AI yordamchini ochish', 'Открыть ИИ-ассистента', 'Open AI Assistant')}
         title={tr(
@@ -1355,10 +1380,10 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
           'ИИ-ассистент (чат и голосовой режим)',
           'AI Assistant (Chat & Voice Mode)'
         )}
-        className={`fixed right-5 bottom-5 z-40 flex h-12 items-center gap-2 rounded-full border px-3.5 shadow-xl transition-all hover:-translate-y-0.5 ${
+        className={`fixed right-5 bottom-5 z-40 flex h-12 items-center gap-2 rounded-full border px-3.5 shadow-xl backdrop-blur-md ${
           open || liveActive
             ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)]'
-            : 'border-[var(--accent)]/60 bg-[var(--panel)] text-[var(--text)] hover:border-[var(--accent)] hover:bg-[var(--panel2)]'
+            : 'border-[var(--accent)]/60 bg-[var(--panel-solid)] text-[var(--text)] hover:border-[var(--accent)] hover:bg-[var(--panel2)]'
         }`}
       >
         <div className="relative flex items-center justify-center">
@@ -1376,7 +1401,7 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
         <span className="hidden text-xs font-extrabold tracking-wide sm:inline">
           {liveActive ? tr(lang, 'Jonli', 'Эфир', 'Live') : 'AI'}
         </span>
-      </button>
+      </motion.button>
     </div>
   );
 };

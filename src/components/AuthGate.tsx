@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { AlertCircle, KeyRound, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import type { Lang, ThemeMode } from '../types';
@@ -183,7 +184,12 @@ export const AuthGate: React.FC<AuthGateProps> = ({
       </div>
 
       <main className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center px-4 py-10">
-        <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)]/95 p-6 shadow-2xl backdrop-blur-md sm:p-7">
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-6 shadow-2xl backdrop-blur-md sm:p-7"
+        >
           {!bootstrapClaimed ? (
             <div className="mb-5 flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--accent-soft)] text-[var(--accent)]">
@@ -205,13 +211,20 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                     setMode('login');
                     setError(null);
                   }}
-                  className={`flex-1 border-b-2 pb-2.5 text-xs font-bold transition-colors ${
+                  className={`relative flex-1 pb-2.5 text-xs font-bold transition-colors ${
                     mode === 'login'
-                      ? 'border-[var(--accent)] text-[var(--accent)]'
-                      : 'border-transparent text-[var(--muted)] hover:text-[var(--text)]'
+                      ? 'text-[var(--accent)]'
+                      : 'text-[var(--muted)] hover:text-[var(--text)]'
                   }`}
                 >
                   {copy.tabLogin}
+                  {mode === 'login' && (
+                    <motion.span
+                      layoutId="auth-mode-indicator"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      className="absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--accent)]"
+                    />
+                  )}
                 </button>
                 <button
                   type="button"
@@ -219,33 +232,49 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                     setMode('observer');
                     setError(null);
                   }}
-                  className={`flex-1 border-b-2 pb-2.5 text-xs font-bold transition-colors ${
+                  className={`relative flex-1 pb-2.5 text-xs font-bold transition-colors ${
                     mode === 'observer'
-                      ? 'border-[var(--accent)] text-[var(--accent)]'
-                      : 'border-transparent text-[var(--muted)] hover:text-[var(--text)]'
+                      ? 'text-[var(--accent)]'
+                      : 'text-[var(--muted)] hover:text-[var(--text)]'
                   }`}
                 >
                   {copy.tabObserver}
+                  {mode === 'observer' && (
+                    <motion.span
+                      layoutId="auth-mode-indicator"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      className="absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--accent)]"
+                    />
+                  )}
                 </button>
               </div>
 
-              <div className="mb-5 flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--accent-soft)] text-[var(--accent)]">
-                  {mode === 'login' ? (
-                    <Lock className="h-4.5 w-4.5" />
-                  ) : (
-                    <UserPlus className="h-4.5 w-4.5" />
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-[var(--text)]">
-                    {mode === 'login' ? copy.loginTitle : copy.observerTitle}
-                  </h1>
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--secondary-text)]">
-                    {mode === 'login' ? copy.loginDesc : copy.observerDesc}
-                  </p>
-                </div>
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mode}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.16 }}
+                  className="mb-5 flex items-start gap-3"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--accent-soft)] text-[var(--accent)]">
+                    {mode === 'login' ? (
+                      <Lock className="h-4.5 w-4.5" />
+                    ) : (
+                      <UserPlus className="h-4.5 w-4.5" />
+                    )}
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold text-[var(--text)]">
+                      {mode === 'login' ? copy.loginTitle : copy.observerTitle}
+                    </h1>
+                    <p className="mt-1 text-xs leading-relaxed text-[var(--secondary-text)]">
+                      {mode === 'login' ? copy.loginDesc : copy.observerDesc}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </>
           )}
 
@@ -381,7 +410,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           <div className="mt-4 border-t border-[var(--line)] pt-3 text-[11px] leading-relaxed text-[var(--muted)]">
             {copy.securityNote}
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   );

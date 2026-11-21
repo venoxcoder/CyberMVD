@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { motion } from 'motion/react';
 import {
   CheckCircle2,
   Clock,
@@ -300,20 +301,30 @@ export const DigitalForensicsPage: React.FC<DigitalForensicsPageProps> = ({
       />
 
       <div className="flex flex-wrap gap-2">
-        {tabs.map((tb) => (
-          <button
-            key={tb.id}
-            type="button"
-            onClick={() => setTab(tb.id)}
-            className={`rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors ${
-              tab === tb.id
-                ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)]'
-                : 'border-[var(--line)] bg-[var(--panel)] text-[var(--secondary-text)] hover:text-[var(--text)]'
-            }`}
-          >
-            {tb.label}
-          </button>
-        ))}
+        {tabs.map((tb) => {
+          const isActive = tab === tb.id;
+          return (
+            <button
+              key={tb.id}
+              type="button"
+              onClick={() => setTab(tb.id)}
+              className={`relative rounded-xl border px-3.5 py-2 text-xs font-bold transition-colors ${
+                isActive
+                  ? 'border-transparent text-[var(--accent-ink)]'
+                  : 'border-[var(--line)] bg-[var(--panel)] text-[var(--secondary-text)] hover:text-[var(--text)]'
+              }`}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="forensics-tab-pill"
+                  transition={{ type: 'spring', stiffness: 430, damping: 32 }}
+                  className="absolute inset-0 rounded-xl bg-[var(--accent)]"
+                />
+              )}
+              <span className="relative z-10">{tb.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* TAB 1: SHA-256 */}

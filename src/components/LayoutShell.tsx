@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Activity,
   ArrowLeft,
@@ -277,14 +278,21 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
                       onNavigate(pid);
                       setMobileOpen(false);
                     }}
-                    className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition-colors ${
+                    className={`relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition-colors ${
                       isActive
-                        ? 'bg-[var(--accent-soft)] font-semibold text-[var(--accent)]'
+                        ? 'font-semibold text-[var(--accent)]'
                         : 'text-[var(--secondary-text)] hover:bg-[var(--hover-bg)] hover:text-[var(--text)]'
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{t(def.labelKey, lang)}</span>
+                    {isActive && (
+                      <motion.span
+                        layoutId="sidebar-pin-active"
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                        className="absolute inset-0 rounded-lg bg-[var(--accent-soft)]"
+                      />
+                    )}
+                    <Icon className="relative z-10 h-3.5 w-3.5 shrink-0" />
+                    <span className="relative z-10 truncate">{t(def.labelKey, lang)}</span>
                   </button>
                 );
               })}
@@ -313,18 +321,25 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
                           onNavigate(item.id);
                           setMobileOpen(false);
                         }}
-                        className={`flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[12.5px] font-medium transition-colors ${
+                        className={`relative flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[12.5px] font-medium transition-colors ${
                           isActive
-                            ? 'bg-[var(--accent-soft)] font-semibold text-[var(--accent)]'
+                            ? 'font-semibold text-[var(--accent)]'
                             : 'text-[var(--secondary-text)] hover:bg-[var(--hover-bg)] hover:text-[var(--text)]'
                         }`}
                       >
+                        {isActive && (
+                          <motion.span
+                            layoutId="sidebar-nav-active"
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                            className="absolute inset-0 rounded-lg border border-[var(--accent)]/25 bg-[var(--accent-soft)]"
+                          />
+                        )}
                         <Icon
-                          className={`h-4 w-4 shrink-0 ${
+                          className={`relative z-10 h-4 w-4 shrink-0 ${
                             isActive ? 'text-[var(--accent)]' : 'text-[var(--muted)]'
                           }`}
                         />
-                        <span className="truncate">{t(item.labelKey, lang)}</span>
+                        <span className="relative z-10 truncate">{t(item.labelKey, lang)}</span>
                       </button>
                       <button
                         type="button"
@@ -391,27 +406,42 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
       <AmbientCyberBackground />
 
       {/* Desktop Sidebar */}
-      <aside className="noprint relative z-10 hidden lg:flex lg:w-[264px] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--sidebar-bg)]/95 lg:backdrop-blur-md lg:sticky lg:top-0 lg:h-screen">
+      <aside className="noprint relative z-10 hidden lg:flex lg:w-[264px] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--sidebar-bg)] lg:backdrop-blur-md lg:sticky lg:top-0 lg:h-screen">
         {renderSidebarContent()}
       </aside>
 
       {/* Mobile Drawer */}
-      {mobileOpen && (
-        <div className="noprint fixed inset-0 z-50 flex lg:hidden">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setMobileOpen(false)} />
-          <aside className="relative z-10 flex w-[272px] max-w-[85vw] flex-col border-r border-[var(--line)] bg-[var(--sidebar-bg)]">
-            <button
-              type="button"
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="noprint fixed inset-0 z-50 flex lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
               onClick={() => setMobileOpen(false)}
-              aria-label="Close navigation"
-              className="absolute top-3.5 right-3 rounded-lg p-1.5 text-[var(--muted)] hover:bg-[var(--hover-bg)] hover:text-[var(--text)]"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              className="relative z-10 flex w-[272px] max-w-[85vw] flex-col border-r border-[var(--line)] bg-[var(--panel-solid)] backdrop-blur-xl"
             >
-              <X className="h-4 w-4" />
-            </button>
-            {renderSidebarContent()}
-          </aside>
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close navigation"
+                className="absolute top-3.5 right-3 rounded-lg p-1.5 text-[var(--muted)] hover:bg-[var(--hover-bg)] hover:text-[var(--text)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              {renderSidebarContent()}
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content Area */}
       <div className="relative z-10 flex min-w-0 flex-1 flex-col">
@@ -510,49 +540,57 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
                   </span>
                 )}
               </button>
-              {notifOpen && (
-                <div className="absolute right-0 z-40 mt-2 w-80 rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3 shadow-2xl">
-                  <div className="mb-2 flex items-center justify-between border-b border-[var(--line)] pb-2 text-xs">
-                    <span className="font-bold text-[var(--text)]">
-                      {lang === 'ru' ? 'Уведомления' : lang === 'en' ? 'Notifications' : 'Bildirishnomalar'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={markAllNotificationsRead}
-                      className="text-[11px] font-semibold text-[var(--accent)] hover:underline"
-                    >
-                      {lang === 'ru' ? 'Прочитано' : lang === 'en' ? 'Mark read' : 'O‘qildi'}
-                    </button>
-                  </div>
-                  <div className="max-h-64 space-y-1.5 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <p className="py-4 text-center text-xs text-[var(--muted)]">
-                        {lang === 'ru' ? 'Нет новых уведомлений.' : lang === 'en' ? 'No new notifications.' : 'Yangi bildirishnomalar yo‘q.'}
-                      </p>
-                    ) : (
-                      notifications.map((n) => (
-                        <button
-                          key={n.id}
-                          type="button"
-                          onClick={() => {
-                            markNotificationRead(n.id);
-                            if (n.targetPage) onNavigate(n.targetPage, n.routeOpts);
-                            setNotifOpen(false);
-                          }}
-                          className={`block w-full rounded-lg border px-2.5 py-2 text-left text-xs transition-colors ${
-                            n.read
-                              ? 'border-[var(--line)] bg-[var(--panel2)]/40 opacity-75'
-                              : 'border-[var(--accent)]/40 bg-[var(--accent-soft)]'
-                          }`}
-                        >
-                          <div className="font-bold text-[var(--text)]">{localizeRecordText(n.title, lang)}</div>
-                          <div className="mt-0.5 text-[11px] text-[var(--secondary-text)]">{localizeRecordText(n.body, lang)}</div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {notifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute right-0 z-40 mt-2 w-80 origin-top-right rounded-xl border border-[var(--line)] bg-[var(--panel-solid)] p-3 shadow-2xl backdrop-blur-xl"
+                  >
+                    <div className="mb-2 flex items-center justify-between border-b border-[var(--line)] pb-2 text-xs">
+                      <span className="font-bold text-[var(--text)]">
+                        {lang === 'ru' ? 'Уведомления' : lang === 'en' ? 'Notifications' : 'Bildirishnomalar'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={markAllNotificationsRead}
+                        className="text-[11px] font-semibold text-[var(--accent)] hover:underline"
+                      >
+                        {lang === 'ru' ? 'Прочитано' : lang === 'en' ? 'Mark read' : 'O‘qildi'}
+                      </button>
+                    </div>
+                    <div className="max-h-64 space-y-1.5 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <p className="py-4 text-center text-xs text-[var(--muted)]">
+                          {lang === 'ru' ? 'Нет новых уведомлений.' : lang === 'en' ? 'No new notifications.' : 'Yangi bildirishnomalar yo‘q.'}
+                        </p>
+                      ) : (
+                        notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => {
+                              markNotificationRead(n.id);
+                              if (n.targetPage) onNavigate(n.targetPage, n.routeOpts);
+                              setNotifOpen(false);
+                            }}
+                            className={`block w-full rounded-lg border px-2.5 py-2 text-left text-xs transition-colors ${
+                              n.read
+                                ? 'border-[var(--line)] bg-[var(--panel2)] opacity-75'
+                                : 'border-[var(--accent)]/40 bg-[var(--accent-soft)]'
+                            }`}
+                          >
+                            <div className="font-bold text-[var(--text)]">{localizeRecordText(n.title, lang)}</div>
+                            <div className="mt-0.5 text-[11px] text-[var(--secondary-text)]">{localizeRecordText(n.body, lang)}</div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Workspace Quick Settings (Density, Preset, Theme, Lang, Hints) */}
@@ -570,98 +608,106 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
               </button>
-              {settingsOpen && (
-                <div className="absolute right-0 z-40 mt-2 w-72 space-y-3 rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 text-xs shadow-2xl">
-                  <div className="border-b border-[var(--line)] pb-2 font-bold text-[var(--text)]">
-                    {lang === 'ru' ? 'Настройка рабочей области' : lang === 'en' ? 'Workspace Settings' : 'Ish maydoni sozlamalari'}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] text-[var(--muted)]">
-                      {lang === 'ru' ? 'Язык интерфейса' : lang === 'en' ? 'Language' : 'Til'}
-                    </label>
-                    <select
-                      value={lang}
-                      onChange={(e) => onLangChange(e.target.value as Lang)}
-                      className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs font-semibold"
-                    >
-                      <option value="uz">O‘zbekcha</option>
-                      <option value="ru">Русский</option>
-                      <option value="en">English</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] text-[var(--muted)]">
-                      {lang === 'ru' ? 'Тема оформления' : lang === 'en' ? 'Theme' : 'Mavzu'}
-                    </label>
-                    <select
-                      value={theme}
-                      onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-                      className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs font-semibold"
-                    >
-                      <option value="dark">{lang === 'ru' ? 'Тёмная (ведомственная)' : lang === 'en' ? 'Dark (Institutional)' : 'Tungi'}</option>
-                      <option value="light">{lang === 'ru' ? 'Светлая' : lang === 'en' ? 'Light' : 'Kunduzgi'}</option>
-                      <option value="system">{lang === 'ru' ? 'Системная' : lang === 'en' ? 'System' : 'Tizim'}</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] text-[var(--muted)]">
-                      {lang === 'ru' ? 'Плотность таблиц и карточек' : lang === 'en' ? 'Interface Density' : 'Zichlik'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {(['standard', 'compact'] as const).map((d) => (
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => setDensity(d)}
-                          className={`rounded-lg border py-1.5 font-semibold ${
-                            prefs.density === d
-                              ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
-                              : 'border-[var(--line)] text-[var(--secondary-text)]'
-                          }`}
-                        >
-                          {d === 'standard'
-                            ? lang === 'ru'
-                              ? 'Стандарт'
-                              : lang === 'en'
-                                ? 'Standard'
-                                : 'Standart'
-                            : lang === 'ru'
-                              ? 'Компакт'
-                              : lang === 'en'
-                                ? 'Compact'
-                                : 'Ixcham'}
-                        </button>
-                      ))}
+              <AnimatePresence>
+                {settingsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute right-0 z-40 mt-2 w-72 origin-top-right space-y-3 rounded-xl border border-[var(--line)] bg-[var(--panel-solid)] p-3.5 text-xs shadow-2xl backdrop-blur-xl"
+                  >
+                    <div className="border-b border-[var(--line)] pb-2 font-bold text-[var(--text)]">
+                      {lang === 'ru' ? 'Настройка рабочей области' : lang === 'en' ? 'Workspace Settings' : 'Ish maydoni sozlamalari'}
                     </div>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[11px] text-[var(--muted)]">
-                      {lang === 'ru' ? 'Профиль модулей' : lang === 'en' ? 'Workspace Preset' : 'Modul profili'}
+                    <div>
+                      <label className="mb-1 block text-[11px] text-[var(--muted)]">
+                        {lang === 'ru' ? 'Язык интерфейса' : lang === 'en' ? 'Language' : 'Til'}
+                      </label>
+                      <select
+                        value={lang}
+                        onChange={(e) => onLangChange(e.target.value as Lang)}
+                        className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs font-semibold"
+                      >
+                        <option value="uz">O‘zbekcha</option>
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] text-[var(--muted)]">
+                        {lang === 'ru' ? 'Тема оформления' : lang === 'en' ? 'Theme' : 'Mavzu'}
+                      </label>
+                      <select
+                        value={theme}
+                        onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
+                        className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs font-semibold"
+                      >
+                        <option value="dark">{lang === 'ru' ? 'Тёмная (ведомственная)' : lang === 'en' ? 'Dark (Institutional)' : 'Tungi'}</option>
+                        <option value="light">{lang === 'ru' ? 'Светлая' : lang === 'en' ? 'Light' : 'Kunduzgi'}</option>
+                        <option value="system">{lang === 'ru' ? 'Системная' : lang === 'en' ? 'System' : 'Tizim'}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] text-[var(--muted)]">
+                        {lang === 'ru' ? 'Плотность таблиц и карточек' : lang === 'en' ? 'Interface Density' : 'Zichlik'}
+                      </label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {(['standard', 'compact'] as const).map((d) => (
+                          <button
+                            key={d}
+                            type="button"
+                            onClick={() => setDensity(d)}
+                            className={`rounded-lg border py-1.5 font-semibold transition-all ${
+                              prefs.density === d
+                                ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
+                                : 'border-[var(--line)] text-[var(--secondary-text)]'
+                            }`}
+                          >
+                            {d === 'standard'
+                              ? lang === 'ru'
+                                ? 'Стандарт'
+                                : lang === 'en'
+                                  ? 'Standard'
+                                  : 'Standart'
+                              : lang === 'ru'
+                                ? 'Компакт'
+                                : lang === 'en'
+                                  ? 'Compact'
+                                  : 'Ixcham'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] text-[var(--muted)]">
+                        {lang === 'ru' ? 'Профиль модулей' : lang === 'en' ? 'Workspace Preset' : 'Modul profili'}
+                      </label>
+                      <select
+                        value={prefs.workspacePreset}
+                        onChange={(e) =>
+                          applyWorkspacePreset(e.target.value as typeof prefs.workspacePreset)
+                        }
+                        className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs"
+                      >
+                        <option value="investigator">{lang === 'ru' ? 'Следователь / Офицер' : lang === 'en' ? 'Investigator' : 'Tergovchi'}</option>
+                        <option value="analyst">{lang === 'ru' ? 'OSINT / Кибер-аналитик' : lang === 'en' ? 'Cyber Analyst' : 'Tahlilchi'}</option>
+                        <option value="supervisor">{lang === 'ru' ? 'Руководитель / Аудит' : lang === 'en' ? 'Supervisor' : 'Rahbar'}</option>
+                      </select>
+                    </div>
+                    <label className="flex cursor-pointer items-center justify-between pt-1">
+                      <span className="text-[var(--secondary-text)]">
+                        {lang === 'ru' ? 'Показывать подсказки' : lang === 'en' ? 'Show onboarding hints' : 'Ko‘rsatmalar'}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={prefs.showHints}
+                        onChange={(e) => setShowHints(e.target.checked)}
+                      />
                     </label>
-                    <select
-                      value={prefs.workspacePreset}
-                      onChange={(e) =>
-                        applyWorkspacePreset(e.target.value as typeof prefs.workspacePreset)
-                      }
-                      className="w-full rounded-lg border border-[var(--line)] bg-[var(--input-bg)] px-2.5 py-1.5 text-xs"
-                    >
-                      <option value="investigator">{lang === 'ru' ? 'Следователь / Офицер' : lang === 'en' ? 'Investigator' : 'Tergovchi'}</option>
-                      <option value="analyst">{lang === 'ru' ? 'OSINT / Кибер-аналитик' : lang === 'en' ? 'Cyber Analyst' : 'Tahlilchi'}</option>
-                      <option value="supervisor">{lang === 'ru' ? 'Руководитель / Аудит' : lang === 'en' ? 'Supervisor' : 'Rahbar'}</option>
-                    </select>
-                  </div>
-                  <label className="flex cursor-pointer items-center justify-between pt-1">
-                    <span className="text-[var(--secondary-text)]">
-                      {lang === 'ru' ? 'Показывать подсказки' : lang === 'en' ? 'Show onboarding hints' : 'Ko‘rsatmalar'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={prefs.showHints}
-                      onChange={(e) => setShowHints(e.target.checked)}
-                    />
-                  </label>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* User Profile Popover */}
@@ -680,56 +726,64 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
                 </span>
                 <span className="hidden max-w-[110px] truncate sm:inline">{user?.name}</span>
               </button>
-              {profileOpen && user && (
-                <div className="absolute right-0 z-40 mt-2 w-64 rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 text-xs shadow-2xl">
-                  <div className="font-bold text-[var(--text)]">{user.name}</div>
-                  <div className="font-mono text-[11px] text-[var(--muted)]">{user.email}</div>
-                  <div className="mt-2 flex flex-wrap gap-1.5 border-y border-[var(--line)] py-2 font-mono text-[10px]">
-                    <span className="text-[var(--accent)]">{roleBadgeText(user.role)}</span>
-                    <span>·</span>
-                    <span>{deptLabel(user.departmentId, lang)}</span>
-                    <span>·</span>
-                    <span>{user.badgeNumber}</span>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onNavigate('profile');
-                        setProfileOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-[var(--hover-bg)]"
-                    >
-                      <UserCheck className="h-3.5 w-3.5 text-[var(--accent)]" />
-                      <span>{t('p_profile', lang)}</span>
-                    </button>
-                    {permissions?.audit_read && (
+              <AnimatePresence>
+                {profileOpen && user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute right-0 z-40 mt-2 w-64 origin-top-right rounded-xl border border-[var(--line)] bg-[var(--panel-solid)] p-3.5 text-xs shadow-2xl backdrop-blur-xl"
+                  >
+                    <div className="font-bold text-[var(--text)]">{user.name}</div>
+                    <div className="font-mono text-[11px] text-[var(--muted)]">{user.email}</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5 border-y border-[var(--line)] py-2 font-mono text-[10px]">
+                      <span className="text-[var(--accent)]">{roleBadgeText(user.role)}</span>
+                      <span>·</span>
+                      <span>{deptLabel(user.departmentId, lang)}</span>
+                      <span>·</span>
+                      <span>{user.badgeNumber}</span>
+                    </div>
+                    <div className="mt-2 space-y-1">
                       <button
                         type="button"
                         onClick={() => {
-                          onNavigate('admin');
+                          onNavigate('profile');
                           setProfileOpen(false);
                         }}
                         className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-[var(--hover-bg)]"
                       >
-                        <Shield className="h-3.5 w-3.5 text-[var(--accent)]" />
-                        <span>{t('p_admin', lang)}</span>
+                        <UserCheck className="h-3.5 w-3.5 text-[var(--accent)]" />
+                        <span>{t('p_profile', lang)}</span>
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfileOpen(false);
-                        logout();
-                      }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[var(--red)] hover:bg-[var(--red)]/10"
-                    >
-                      <LogOut className="h-3.5 w-3.5" />
-                      <span>{lang === 'ru' ? 'Выйти из сессии' : lang === 'en' ? 'Sign out' : 'Chiqish'}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                      {permissions?.audit_read && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onNavigate('admin');
+                            setProfileOpen(false);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-[var(--hover-bg)]"
+                        >
+                          <Shield className="h-3.5 w-3.5 text-[var(--accent)]" />
+                          <span>{t('p_admin', lang)}</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          logout();
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[var(--red)] hover:bg-[var(--red)]/10"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>{lang === 'ru' ? 'Выйти из сессии' : lang === 'en' ? 'Sign out' : 'Chiqish'}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
@@ -739,23 +793,39 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
         </main>
       </div>
 
-      {showScrollTop && (
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label={tr(lang, 'Yuqoriga qaytish', 'Наверх', 'Scroll to top')}
-          title={tr(lang, 'Yuqoriga', 'Наверх', 'Top')}
-          className="noprint fixed right-5 bottom-20 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel)] text-[var(--accent)] shadow-lg backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--panel2)]"
-        >
-          <ArrowUp className="h-4 w-4" />
-        </button>
-      )}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, y: 14, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.85 }}
+            whileHover={{ y: -2, scale: 1.06 }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label={tr(lang, 'Yuqoriga qaytish', 'Наверх', 'Scroll to top')}
+            title={tr(lang, 'Yuqoriga', 'Наверх', 'Top')}
+            className="noprint fixed right-5 bottom-20 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-solid)] text-[var(--accent)] shadow-lg backdrop-blur-md hover:border-[var(--accent)] hover:bg-[var(--panel2)]"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-      {toastMessage && (
-        <div className="noprint fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-[var(--accent)] bg-[var(--panel)] px-4 py-2.5 text-xs font-semibold text-[var(--text)] shadow-xl">
-          {toastMessage}
-        </div>
-      )}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="noprint fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-[var(--accent)] bg-[var(--panel-solid)] px-4 py-2.5 text-xs font-semibold text-[var(--text)] shadow-xl backdrop-blur-md"
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

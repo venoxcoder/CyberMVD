@@ -5,19 +5,20 @@
 [data-theme="dark"] {
   color-scheme: dark;
   --bg: #070b12;
-  --panel: #0d1420;
-  --panel2: #121c2c;
-  --sidebar-bg: #090f19;
-  --topbar-bg: rgba(9, 15, 25, 0.92);
-  --input-bg: #0a101b;
-  --hover-bg: #162336;
+  --panel: rgba(13, 20, 32, 0.74);
+  --panel-solid: #0d1420;
+  --panel2: rgba(18, 28, 44, 0.78);
+  --sidebar-bg: rgba(9, 15, 25, 0.78);
+  --topbar-bg: rgba(9, 15, 25, 0.80);
+  --input-bg: rgba(10, 16, 27, 0.86);
+  --hover-bg: rgba(22, 35, 54, 0.85);
   --line: #1f2e45;
   --text: #eaf0f8;
   --secondary-text: #a5b5c8;
   --muted: #7a8ca3;
   --accent: #2dd4bf;
   --accent-hover: #5eead4;
-  --accent-soft: rgba(45, 212, 191, 0.12);
+  --accent-soft: rgba(45, 212, 191, 0.14);
   --accent-ink: #041d1b;
   --blue: #38bdf8;
   --purple: #a78bfa;
@@ -28,20 +29,21 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f1f5f9;
-  --panel: #ffffff;
-  --panel2: #f8fafc;
-  --sidebar-bg: #ffffff;
-  --topbar-bg: rgba(255, 255, 255, 0.94);
-  --input-bg: #f8fafc;
-  --hover-bg: #eef2f7;
+  --bg: #eef3f9;
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-solid: #ffffff;
+  --panel2: rgba(248, 250, 252, 0.84);
+  --sidebar-bg: rgba(255, 255, 255, 0.82);
+  --topbar-bg: rgba(255, 255, 255, 0.84);
+  --input-bg: rgba(248, 250, 252, 0.9);
+  --hover-bg: rgba(238, 242, 247, 0.92);
   --line: #dbe3ee;
   --text: #0f172a;
   --secondary-text: #475569;
   --muted: #64748b;
   --accent: #0f766e;
   --accent-hover: #0d9488;
-  --accent-soft: rgba(15, 118, 110, 0.1);
+  --accent-soft: rgba(15, 118, 110, 0.11);
   --accent-ink: #ffffff;
   --blue: #0284c7;
   --purple: #6d28d9;
@@ -62,6 +64,37 @@ body {
   color: var(--text);
   font-family: "Plus Jakarta Sans", "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 260ms ease, color 220ms ease;
+}
+
+/* Smooth transitions & tactile click feedback across interactive controls */
+button,
+[role="button"],
+a,
+select,
+input,
+textarea {
+  transition:
+    background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 160ms ease,
+    box-shadow 180ms ease,
+    opacity 160ms ease,
+    transform 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
+aside,
+header,
+section {
+  transition:
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 220ms ease;
 }
 
 .font-mono,
@@ -96,6 +129,22 @@ pre {
   background: var(--panel2);
   border-radius: 6px;
   animation: pulse-subtle 1.5s ease-in-out infinite;
+}
+
+/* Reusable subtle fade-slide entrance for tab panels and modals */
+@keyframes panel-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-panel-reveal {
+  animation: panel-reveal 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Custom scrollbar */
@@ -145,18 +194,28 @@ mark.hl {
 }
 
 /* Institutional animated cyber-intelligence background */
+@keyframes cyber-grid-pan {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 48px 48px, 48px 48px;
+  }
+}
+
 .cyber-bg-grid {
   background-image:
-    linear-gradient(to right, rgba(45, 212, 191, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(45, 212, 191, 0.045) 1px, transparent 1px);
+    linear-gradient(to right, rgba(45, 212, 191, 0.085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(45, 212, 191, 0.085) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 92% 85% at 50% 40%, #000 45%, transparent 100%);
+  animation: cyber-grid-pan 26s linear infinite;
 }
 
 [data-theme="light"] .cyber-bg-grid {
   background-image:
-    linear-gradient(to right, rgba(15, 118, 110, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 118, 110, 0.055) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 118, 110, 0.095) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 118, 110, 0.095) 1px, transparent 1px);
 }
 
 @keyframes cyber-drift-a {
@@ -164,7 +223,7 @@ mark.hl {
     transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(6vw, 4vh, 0) scale(1.08);
+    transform: translate3d(9vw, 6vh, 0) scale(1.12);
   }
 }
 
@@ -173,23 +232,23 @@ mark.hl {
     transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(-7vw, -5vh, 0) scale(1.1);
+    transform: translate3d(-10vw, -7vh, 0) scale(1.14);
   }
 }
 
 @keyframes cyber-scan-sweep {
   0% {
-    transform: translateY(-12vh);
+    transform: translateY(-10vh);
     opacity: 0;
   }
-  12% {
-    opacity: 0.55;
+  10% {
+    opacity: 0.72;
   }
-  88% {
-    opacity: 0.45;
+  90% {
+    opacity: 0.58;
   }
   100% {
-    transform: translateY(112vh);
+    transform: translateY(110vh);
     opacity: 0;
   }
 }
@@ -197,38 +256,38 @@ mark.hl {
 .cyber-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(88px);
+  filter: blur(76px);
   will-change: transform;
 }
 
 .cyber-orb-a {
-  top: -12%;
-  left: -8%;
-  width: 44vw;
-  height: 44vw;
-  max-width: 620px;
-  max-height: 620px;
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.14) 0%, rgba(45, 212, 191, 0) 70%);
-  animation: cyber-drift-a 20s ease-in-out infinite;
+  top: -10%;
+  left: -6%;
+  width: 46vw;
+  height: 46vw;
+  max-width: 660px;
+  max-height: 660px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0) 70%);
+  animation: cyber-drift-a 16s ease-in-out infinite;
 }
 
 .cyber-orb-b {
-  right: -10%;
-  bottom: -14%;
-  width: 48vw;
-  height: 48vw;
-  max-width: 680px;
-  max-height: 680px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.13) 0%, rgba(56, 189, 248, 0) 70%);
-  animation: cyber-drift-b 24s ease-in-out infinite;
+  right: -8%;
+  bottom: -12%;
+  width: 50vw;
+  height: 50vw;
+  max-width: 720px;
+  max-height: 720px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.20) 0%, rgba(56, 189, 248, 0) 70%);
+  animation: cyber-drift-b 20s ease-in-out infinite;
 }
 
 [data-theme="light"] .cyber-orb-a {
-  background: radial-gradient(circle, rgba(15, 118, 110, 0.09) 0%, rgba(15, 118, 110, 0) 70%);
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.14) 0%, rgba(15, 118, 110, 0) 70%);
 }
 
 [data-theme="light"] .cyber-orb-b {
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, rgba(2, 132, 199, 0) 70%);
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.13) 0%, rgba(2, 132, 199, 0) 70%);
 }
 
 .cyber-scanline {
@@ -240,20 +299,12 @@ mark.hl {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(45, 212, 191, 0.28) 30%,
-    rgba(56, 189, 248, 0.34) 50%,
-    rgba(45, 212, 191, 0.28) 70%,
+    rgba(45, 212, 191, 0.42) 30%,
+    rgba(56, 189, 248, 0.52) 50%,
+    rgba(45, 212, 191, 0.42) 70%,
     transparent 100%
   );
-  box-shadow: 0 0 18px rgba(45, 212, 191, 0.22);
-  animation: cyber-scan-sweep 11s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cyber-orb-a,
-  .cyber-orb-b,
-  .cyber-scanline {
-    animation: none;
-  }
+  box-shadow: 0 0 22px rgba(45, 212, 191, 0.35);
+  animation: cyber-scan-sweep 9.5s linear infinite;
 }
 

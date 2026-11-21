@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import mammoth from 'mammoth';
 import {
   AlertTriangle,
@@ -1318,20 +1319,30 @@ export const AiAssistantPage: React.FC<AiAssistantPageProps> = ({
           {/* Mode selector & voice persona */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] p-3">
             <div className="flex flex-wrap gap-1.5">
-              {modes.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setMode(m.id)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    mode === m.id
-                      ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
-                      : 'bg-[var(--panel2)] text-[var(--secondary-text)] hover:text-[var(--text)]'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
+              {modes.map((m) => {
+                const isActive = mode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMode(m.id)}
+                    className={`relative rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      isActive
+                        ? 'text-[var(--accent-ink)]'
+                        : 'bg-[var(--panel2)] text-[var(--secondary-text)] hover:text-[var(--text)]'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="ai-page-mode-pill"
+                        transition={{ type: 'spring', stiffness: 430, damping: 32 }}
+                        className="absolute inset-0 rounded-lg bg-[var(--accent)]"
+                      />
+                    )}
+                    <span className="relative z-10">{m.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {!voiceModeOpen && (
