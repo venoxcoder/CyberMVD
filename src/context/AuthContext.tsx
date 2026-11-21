@@ -8,6 +8,7 @@ import type {
   WorkspacePreferences,
 } from '../types';
 import { lsJSON, lsSetJSON } from '../utils/storage';
+import { createStaticDemoUser, handleStaticApi } from '../utils/staticFallback';
 
 const DEFAULT_PREFS: WorkspacePreferences = {
   density: 'standard',
@@ -26,11 +27,13 @@ interface AuthContextValue {
   bootstrapClaimed: boolean | null;
   requiresBootPasscode: boolean;
   aiConfigured: boolean;
+  backendAvailable: boolean;
   authLoading: boolean;
   prefs: WorkspacePreferences;
   notifications: AppNotification[];
   apiFetch: <T = unknown>(url: string, init?: RequestInit) => Promise<T>;
   refreshStatus: () => Promise<void>;
+  enterStaticDemo: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   setupAdmin: (params: {
     name: string;
@@ -64,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [bootstrapClaimed, setBootstrapClaimed] = useState<boolean | null>(null);
   const [requiresBootPasscode, setRequiresBootPasscode] = useState(false);
   const [aiConfigured, setAiConfigured] = useState(false);
+  const [backendAvailable, setBackendAvailable] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
 
   const [prefs, setPrefs] = useState<WorkspacePreferences>(() =>
@@ -87,16 +91,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthLoading(true);
     try {
       const res = await fetch('/api/auth/status');
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        setBackendAvailable(false);
+        setBootstrapClaimed(true);
+        setAiConfigured(false);
+        return;
+      }
       const data = (await res.json()) as {
         bootstrapClaimed: boolean;
         requiresBootPasscode?: boolean;
         aiConfigured: boolean;
       };
+      setBackendAvailable(true);
       setBootstrapClaimed(Boolean(data.bootstrapClaimed));
       setRequiresBootPasscode(Boolean(data.requiresBootPasscode));
       setAiConfigured(Boolean(data.aiConfigured));
     } catch {
-      setBootstrapClaimed(false);
+      setBackendAvailable(false);
+      setBootstrapClaimed(true);
+      setAiConfigured(false);
     } finally {
       setAuthLoading(false);
     }
@@ -108,6 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const apiFetch = useCallback(
     async <T = unknown>(url: string, init: RequestInit = {}): Promise<T> => {
+      if (!backendAvailable) {
+        return handleStaticApi<T>(url, init, user);
+      }
       const headers = new Headers(init.headers);
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
@@ -127,20 +144,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return data as T;
     },
-    [token]
+    [token, backendAvailable, user]
   );
 
   const hydrateNotifications = useCallback(
-    async (bearer: string) => {
+    async (bearer: string, fallbackUser?: InstitutionalUser | null) => {
       try {
-        const res = await fetch('/api/dashboard/summary?period=30d', {
-          headers: { Authorization: `Bearer ${bearer}` },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as {
+        let data: {
           metrics?: { pendingEvidenceCount?: number; openTasksCount?: number };
           pendingTasks?: { id: string; title: string; caseId: string; caseNumber: string; dueDate: string }[];
         };
+        if (bearer === 'static-demo-token') {
+          data = handleStaticApi('/api/dashboard/summary?period=30d', {}, fallbackUser || null);
+        } else {
+          const res = await fetch('/api/dashboard/summary?period=30d', {
+            headers: { Authorization: `Bearer ${bearer}` },
+          });
+          if (!res.ok) return;
+          data = (await res.json()) as typeof data;
+        }
         const items: AppNotification[] = [];
         if ((data.metrics?.pendingEvidenceCount || 0) > 0) {
           items.push({
@@ -173,8 +195,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
+  const enterStaticDemo = useCallback(async () => {
+    const demo = createStaticDemoUser('admin');
+    setToken('static-demo-token');
+    setUser(demo.user);
+    setPermissions(demo.permissions);
+    await hydrateNotifications('static-demo-token', demo.user);
+  }, [hydrateNotifications]);
+
   const login = useCallback(
     async (email: string, password: string) => {
+      if (!backendAvailable) {
+        const demo = createStaticDemoUser('admin', { email, name: email.split('@')[0] || 'Investigator' });
+        setToken('static-demo-token');
+        setUser(demo.user);
+        setPermissions(demo.permissions);
+        await hydrateNotifications('static-demo-token', demo.user);
+        return;
+      }
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -189,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPermissions(data.permissions);
       await hydrateNotifications(data.token);
     },
-    [hydrateNotifications]
+    [hydrateNotifications, backendAvailable]
   );
 
   const setupAdmin = useCallback(
@@ -200,6 +238,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       badgeNumber: string;
       bootPasscode?: string;
     }) => {
+      if (!backendAvailable) {
+        const demo = createStaticDemoUser('admin', {
+          name: params.name,
+          email: params.email,
+          badgeNumber: params.badgeNumber,
+        });
+        setBootstrapClaimed(true);
+        setToken('static-demo-token');
+        setUser(demo.user);
+        setPermissions(demo.permissions);
+        await hydrateNotifications('static-demo-token', demo.user);
+        return;
+      }
       const res = await fetch('/api/auth/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -215,11 +266,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPermissions(data.permissions);
       await hydrateNotifications(data.token);
     },
-    [hydrateNotifications]
+    [hydrateNotifications, backendAvailable]
   );
 
   const registerObserver = useCallback(
     async (params: { name: string; email: string; password: string }) => {
+      if (!backendAvailable) {
+        const demo = createStaticDemoUser('observer', {
+          name: params.name,
+          email: params.email,
+          badgeNumber: 'OBS-01',
+        });
+        setToken('static-demo-token');
+        setUser(demo.user);
+        setPermissions(demo.permissions);
+        await hydrateNotifications('static-demo-token', demo.user);
+        return;
+      }
       const res = await fetch('/api/auth/register-observer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,11 +297,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPermissions(data.permissions);
       await hydrateNotifications(data.token);
     },
-    [hydrateNotifications]
+    [hydrateNotifications, backendAvailable]
   );
 
   const logout = useCallback(async () => {
-    if (token) {
+    if (token && backendAvailable) {
       await fetch('/api/auth/logout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -248,7 +311,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setPermissions(null);
     setNotifications([]);
-  }, [token]);
+  }, [token, backendAvailable]);
 
   const setDensity = useCallback(
     (d: DensityMode) => updatePrefs((p) => ({ ...p, density: d })),
@@ -368,11 +431,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bootstrapClaimed,
         requiresBootPasscode,
         aiConfigured,
+        backendAvailable,
         authLoading,
         prefs,
         notifications,
         apiFetch,
         refreshStatus,
+        enterStaticDemo,
         login,
         setupAdmin,
         registerObserver,

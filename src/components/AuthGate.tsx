@@ -19,7 +19,9 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   const {
     bootstrapClaimed,
     requiresBootPasscode,
+    backendAvailable,
     authLoading,
+    enterStaticDemo,
     login,
     setupAdmin,
     registerObserver,
@@ -142,7 +144,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
       <div className="flex items-center justify-between border-b border-[var(--line)] bg-[var(--sidebar-bg)] px-6 py-3">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/aistudio/logo_e89a7120.svg"
+            src="./assets/aistudio/logo_e89a7120.svg"
             alt="KIBERJINOYATLAR"
             className="h-7 w-7 object-contain"
           />
@@ -243,6 +245,39 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                 </div>
               </div>
             </>
+          )}
+
+          {!backendAvailable && (
+            <div className="mb-4 rounded-xl border border-[var(--accent)]/40 bg-[var(--accent-soft)] p-3.5 text-xs">
+              <div className="font-bold text-[var(--accent)]">
+                {lang === 'ru'
+                  ? 'Автономный статический режим (GitHub Pages)'
+                  : lang === 'en'
+                    ? 'Standalone Static Mode (GitHub Pages)'
+                    : 'Avtonom statik rejim (GitHub Pages)'}
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-[var(--secondary-text)]">
+                {lang === 'ru'
+                  ? 'Сервер Node.js не подключён (данные сохраняются локально в браузере; серверный ИИ доступен при запуске Node-сервера).'
+                  : lang === 'en'
+                    ? 'No Node.js backend detected (case & evidence data runs locally in browser storage; server Gemini AI requires Node host).'
+                    : 'Node.js serveri ulanmagan (ishlar brauzerda saqlanadi; Gemini AI uchun Node server kerak).'}
+              </p>
+              <button
+                type="button"
+                onClick={() => void enterStaticDemo()}
+                className="mt-2.5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>
+                  {lang === 'ru'
+                    ? 'Войти в платформу (демо-доступ)'
+                    : lang === 'en'
+                      ? 'Enter Platform (Offline Mode)'
+                      : 'Platformaga kirish (Avtonom rejim)'}
+                </span>
+              </button>
+            </div>
           )}
 
           {error && (

@@ -239,7 +239,7 @@ export const LayoutShell: React.FC<LayoutShellProps> = ({
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--panel2)] p-1">
           <img
-            src="/assets/aistudio/logo_e89a7120.svg"
+            src="./assets/aistudio/logo_e89a7120.svg"
             alt="KIBERJINOYATLAR"
             className="h-full w-full object-contain"
           />

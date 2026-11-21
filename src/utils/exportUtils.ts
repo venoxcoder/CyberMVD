@@ -27,8 +27,8 @@ async function loadUnicodeFonts(): Promise<{ regular: string; bold: string } | n
   if (cachedFonts) return cachedFonts;
   try {
     const [regRes, boldRes] = await Promise.all([
-      fetch('/fonts/DejaVuSans.ttf'),
-      fetch('/fonts/DejaVuSans-Bold.ttf'),
+      fetch('./fonts/DejaVuSans.ttf'),
+      fetch('./fonts/DejaVuSans-Bold.ttf'),
     ]);
     if (!regRes.ok || !boldRes.ok) return null;
     const [regBuf, boldBuf] = await Promise.all([regRes.arrayBuffer(), boldRes.arrayBuffer()]);
