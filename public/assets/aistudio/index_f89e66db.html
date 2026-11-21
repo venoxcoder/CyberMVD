@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080e1b">
+  <title>KIBERJINOYATLAR | Investigation Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+         <img src="logo.svg" alt="Kiberjinoyatlar logotipi" class="brand-logo">
+        <div class="brand-mark">K</div>
+        <div>
+          <div class="brand-name">KIBER<span>JINOYATLAR</span></div>
+          <small id="brandSubtitle"></small>
+        </div>
+      </div>
+
+      <div id="navRoot"></div>
+
+      <div class="sidebar-bottom">
+        <div class="status-dot"></div>
+        <div>
+          <strong id="systemStatus"></strong>
+          <small id="systemMode"></small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Menu">☰</button>
+        <div class="breadcrumb">
+          <span id="platformLabel"></span>
+          <span>/</span>
+          <strong id="pageCrumb"></strong>
+        </div>
+
+        <div class="topbar-right">
+          <select id="languageSelect" class="language-select" aria-label="Language">
+            <option value="uz">🇺🇿 O‘zbekcha</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+
+          <select id="themeSelect" class="language-select" aria-label="Theme">
+            <option value="system" data-i18n-theme="system">System</option>
+            <option value="light" data-i18n-theme="light">Light</option>
+            <option value="dark" data-i18n-theme="dark">Dark</option>
+          </select>
+
+          <div class="live-indicator"><i></i> ONLINE</div>
+          <div class="user-avatar">TJ</div>
+        </div>
+      </header>
+
+      <section class="page-content" id="pageContent"></section>
+
+      <footer class="footer">
+        <span>KIBERJINOYATLAR © 2026</span>
+        <span id="footerSubtitle"></span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="data.js"></script>
+  <script src="pages.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
