@@ -1191,9 +1191,9 @@ export function handleStaticApi<T = unknown>(
       if (!q || `${c.caseNumber} ${c.title} ${c.summary}`.toLowerCase().includes(q)) {
         results.push({
           id: c.id,
-          type: 'case',
+          kind: 'case',
           title: `${c.caseNumber} — ${c.title}`,
-          subtitle: c.summary.slice(0, 100),
+          snippet: c.summary.slice(0, 120),
           status: c.status,
           date: c.updatedAt,
           targetPage: 'case',
@@ -1205,9 +1205,9 @@ export function handleStaticApi<T = unknown>(
       if (!q || `${e.id} ${e.name} ${e.sha256}`.toLowerCase().includes(q)) {
         results.push({
           id: e.id,
-          type: 'evidence',
+          kind: 'evidence',
           title: `${e.id} — ${e.name}`,
-          subtitle: e.source,
+          snippet: `${e.source} · SHA-256: ${e.sha256.slice(0, 16)}…`,
           status: e.verificationStatus,
           date: e.receivedAt,
           targetPage: 'evidenceCenter',
