@@ -455,7 +455,7 @@ export const TestCenterPage: React.FC<TestCenterPageProps> = ({
           {/* Question Cards */}
           <div className="space-y-4">
             {activeQuestions.map((q, idx) => {
-              const opts = q.options[lang] || q.options.ru;
+              const opts = q.options?.[lang] || q.options?.ru || q.options?.uz || [];
               const picked = answers[q.id];
               return (
                 <div key={q.id} className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-5 space-y-3">

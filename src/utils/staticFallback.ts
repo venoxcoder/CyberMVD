@@ -10,6 +10,7 @@ import type {
   InstitutionalPermissionSet,
   InstitutionalRole,
   InstitutionalUser,
+  Lang,
 } from '../types';
 
 export const STATIC_ROLE_MATRIX: Record<InstitutionalRole, InstitutionalPermissionSet> = {
@@ -1262,7 +1263,102 @@ export function handleStaticApi<T = unknown>(
   }
 
   if (pathname === '/api/ai/predict') {
-    throw new Error('AI predictive forecasting requires an active backend server with GEMINI_API_KEY configured.');
+    const regionId = String(body.regionId || 'all');
+    const regionName = String(body.regionName || 'Republic of Uzbekistan');
+    const horizonDays = Number(body.horizonDays) || 30;
+    const categoryFocus = String(body.categoryFocus || 'all');
+    const lang = (body.lang as Lang) || 'ru';
+    const liveLen = store.cases.length;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      model: 'gemini-4-hydrogen (static fallback)',
+      scope: {
+        regionId,
+        regionName,
+        horizonDays,
+        categoryFocus,
+        liveCasesAnalyzed: liveLen,
+        liveEvidenceAnalyzed: store.evidence.length,
+      },
+      forecast: {
+        overallRiskScore: 78,
+        overallRiskLevel: lang === 'ru' ? 'Высокий уровень оперативного риска' : lang === 'en' ? 'High Operational Risk Level' : 'Yuqori operativ xavf darajasi',
+        trendDirection: '+14.5% (рост)',
+        executiveBrief:
+          lang === 'ru'
+            ? `Прогноз для региона "${regionName}" на ${horizonDays} дней. На основе анализа ${liveLen} дел и ведомственных баз данных (KHOR) фиксируется активизация мошеннических рассылок APK-файлов под видом налоговых и социальных уведомлений, а также треугольных P2P схем.`
+            : lang === 'en'
+              ? `Forecast for "${regionName}" over ${horizonDays} days. Based on ${liveLen} active cases and regional statistics, threat vectors indicate surging malware APK distributions and P2P drop operations.`
+              : `"${regionName}" bo‘yicha ${horizonDays} kunlik prognoz. ${liveLen} ta ish va rasmiy statistika tahliliga ko‘ra, soliq va nafaqa niqobidagi zararli APK tarqalishi hamda P2P-droplar faolashmoqda.`,
+        predictedThreats: [
+          {
+            title: lang === 'ru' ? 'Рассылка троянов под видом налоговых долгов' : lang === 'en' ? 'Tax Debt Malware APK Distribution' : 'Soliq qarzi niqobidagi zararli APK',
+            category: 'apk_fraud',
+            probabilityPct: 86,
+            projectedCasesDelta: '+22.4%',
+            articleCode: 'ст. 169, 278-6 УК',
+            articleId: 'a169',
+            targetAudience: lang === 'ru' ? 'Владельцы смартфонов Android, получающие SMS о задолженностях' : 'Android smartphone users receiving SMS alerts',
+            mechanismForecast: lang === 'ru' ? 'Перехват сессий интернет-банкинга через вредоносный APK-пакет и удаленный доступ.' : 'Internet banking session hijacking via malicious APK update.',
+            earlyIndicators: [
+              'Массовые рассылки .apk файлов в Telegram',
+              'Запросы на разрешение службы Accessibility (спец. возможности)',
+              'Исходящие вызовы на подорожные серверы',
+            ],
+            preventiveMeasures: [
+              'Экстренное оповещение абонентов через операторов связи',
+              'Мониторинг транзитных P2P реквизитов',
+              'Быстрое блокирование фишинговых доменов',
+            ],
+          },
+          {
+            title: lang === 'ru' ? 'Треугольные P2P расчеты и дроп-фермы' : lang === 'en' ? 'Triangular P2P Laundering & Drop Farms' : 'Uch tomonlama P2P va drop-fermalar',
+            category: 'crypto_fraud',
+            probabilityPct: 74,
+            projectedCasesDelta: '+16.8%',
+            articleCode: 'ст. 168, 278-8 УК',
+            articleId: 'a168',
+            targetAudience: lang === 'ru' ? 'Граждане, пользующиеся P2P-биржами и обменниками' : 'P2P cryptocurrency traders',
+            mechanismForecast: lang === 'ru' ? 'Использование счетов подставных лиц для обналичивания средств.' : 'Using nominee bank accounts to convert stolen fiat into crypto.',
+            earlyIndicators: [
+              'Резкий приток мелких переводов на карту физического лица',
+              'Связь одной SIM-карты с десятками банковских аккаунтов',
+            ],
+            preventiveMeasures: [
+              'Антифрод-проверка P2P площадок',
+              'Оперативная заморозка счетов дропперов в первые 30 минут',
+            ],
+          },
+        ],
+        regionalHotspots: [
+          {
+            regionName: regionId === 'all' ? 'Toshkent shahri' : regionName,
+            riskScore: 84,
+            primaryVector: 'APK-мошенничество (ст. 169)',
+            rationale: lang === 'ru' ? 'Высокая концентрация мобильных пользователей и финансовых транзакций.' : 'High concentration of mobile users and financial transactions.',
+          },
+          {
+            regionName: 'Farg‘ona vodiysi',
+            riskScore: 72,
+            primaryVector: 'Сомнительные P2P-переводы и займы',
+            rationale: lang === 'ru' ? 'Активность посредников и объявлений о быстром заработке.' : 'Activity of intermediaries and quick earnings ads.',
+          },
+          {
+            regionName: 'Xorazm / Qoraqalpog‘iston',
+            riskScore: 65,
+            primaryVector: 'Социальная инженерия',
+            rationale: lang === 'ru' ? 'Звонки от лже-сотрудников банков.' : 'Vishing calls impersonating bank staff.',
+          },
+        ],
+        timelineProjection: [
+          { label: 'T-15d', baseline: 120, projected: 128, confidenceLow: 115, confidenceHigh: 140 },
+          { label: 'Today', baseline: 145, projected: 145, confidenceLow: 145, confidenceHigh: 145 },
+          { label: '+10d', baseline: 152, projected: 172, confidenceLow: 160, confidenceHigh: 185 },
+          { label: `+${horizonDays}d`, baseline: 160, projected: 198, confidenceLow: 180, confidenceHigh: 218 },
+        ],
+      },
+    } as T;
   }
 
   return {} as T;

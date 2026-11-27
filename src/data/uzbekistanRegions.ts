@@ -310,7 +310,7 @@ export const UZBEKISTAN_REGIONS: UzbekistanRegionDef[] = [
 export const ARAL_SEA_BAY_PATH = 'M205,52 L218,120 L238,148 L270,132 L286,70 Z';
 
 export function getRegionName(region: UzbekistanRegionDef, lang: Lang): string {
-  return region.name[lang] || region.name.ru || region.name.uz;
+  return region?.name?.[lang] || region?.name?.ru || region?.name?.uz || String(region?.id || '');
 }
 
 export function matchCaseRegionId(text: string, fallbackDeptId?: string): string {

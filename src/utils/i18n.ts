@@ -40,7 +40,11 @@ function transliterateCyrToLat(input: string): string {
  * or transliterates into Uzbek Latin ('uz') using UZ_CYR_TRANSLATIONS.
  */
 export function tx(str: unknown, lang: Lang): string {
-  const input = String(str ?? '');
+  if (!str) return '';
+  if (typeof str === 'object' && str !== null && ('uz' in str || 'ru' in str || 'en' in str)) {
+    return pickText(str as TrilingualText, lang);
+  }
+  const input = String(str);
   if (!input) return input;
 
   if (lang === 'ru' || lang === 'en') {
@@ -63,8 +67,14 @@ export function tx(str: unknown, lang: Lang): string {
   return transliterateCyrToLat(input);
 }
 
-export function pickText(text: TrilingualText, lang: Lang): string {
-  return text[lang] || text.ru || text.uz || text.en;
+export function pickText(text: unknown, lang: Lang): string {
+  if (!text) return '';
+  if (typeof text === 'string') return text;
+  if (typeof text === 'object' && text !== null) {
+    const tObj = text as Record<string, string>;
+    return tObj[lang] || tObj.ru || tObj.uz || tObj.en || '';
+  }
+  return String(text);
 }
 
 export function artLabel(code: string, lang: Lang): string {
